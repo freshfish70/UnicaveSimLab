@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -38,15 +38,17 @@ public class RealtimeCalibrator : NetworkBehaviour
 
     private void LocalShift(Vector2 direction, float delta, int selectedIndex, int vertexIndex)
     {
+		PhysicalDisplayCalibration calibration = allOptions[selectedIndex].calibration;
+		calibration.SetVertextPoint(vertexIndex);
         Debug.Log("RealtimeCalibration: LocalShift called " + delta + ", " + selectedIndex + ", " + vertexIndex);
         List<MeshFilter> toUpdate = new List<MeshFilter>();
-        if (allOptions[selectedIndex].calibration.leftChild != null)
+		if (calibration.leftChild != null)
         {
-            toUpdate.Add(allOptions[selectedIndex].calibration.leftChild.GetComponent<MeshFilter>());
+			toUpdate.Add(calibration.leftChild.GetComponent<MeshFilter>());
         }
-        if (allOptions[selectedIndex].calibration.rightChild != null)
+		if (calibration.rightChild != null)
         {
-            toUpdate.Add(allOptions[selectedIndex].calibration.rightChild.GetComponent<MeshFilter>());
+			toUpdate.Add(calibration.rightChild.GetComponent<MeshFilter>());
         }
 
         foreach (MeshFilter selected in toUpdate)
@@ -59,13 +61,15 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         if (toUpdate.Count != 0)
         {
-            PhysicalDisplayCalibration cali = allOptions[selectedIndex].calibration;
+
             Vector3[] verts = toUpdate[0].sharedMesh.vertices;
-            cali.upperRightPosition = new Vector3(verts[0].x / cali.displayRatio, verts[0].y);
-            cali.upperLeftPosition = new Vector3(verts[1].x / cali.displayRatio, verts[1].y);
-            cali.lowerLeftPosition = new Vector3(verts[2].x / cali.displayRatio, verts[2].y);
-            cali.lowerRightPosition = new Vector3(verts[3].x / cali.displayRatio, verts[3].y);
-            cali.SaveWarpFile();
+			calibration.upperRightPosition = new Vector3(verts[0].x / calibration.displayRatio, verts[0].y);
+			calibration.upperLeftPosition = new Vector3(verts[1].x / calibration.displayRatio, verts[1].y);
+			calibration.lowerLeftPosition = new Vector3(verts[2].x / calibration.displayRatio, verts[2].y);
+			calibration.lowerRightPosition = new Vector3(verts[3].x / calibration.displayRatio, verts[3].y);
+			calibration.SaveWarpFile();
+		}
+	}
         }
     }
 
