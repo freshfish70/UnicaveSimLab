@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-
+﻿
 /// <summary>
 /// Manages enabling/disabling fields in the inspector
 /// depending on the attribute value from <c>ConditionalHideAttribute</c>
@@ -14,6 +12,10 @@ using UnityEditor;
 /// Added reversing so we can enable a property and disable another 
 /// with the same controling source.
 /// </summary>
+
+using UnityEngine;
+using UnityEditor;
+
 [CustomPropertyDrawer(typeof(ConditionalHideAttribute))]
 public class ConditionalHidePropertyDrawer : PropertyDrawer
 {
