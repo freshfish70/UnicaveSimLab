@@ -1,4 +1,4 @@
-//MIT License
+﻿//MIT License
 //Copyright 2016-Present 
 //Ross Tredinnick
 //Benny Wysong-Grass
@@ -32,6 +32,11 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	[Tooltip("Load config file on start")]
 	[SerializeField]
 	private bool loadConfigOnStart = true;
+
+	[SerializeField]
+	private SpriteRenderer visualMarker;
+
+	private SpriteRenderer visualMarkerInstance;
 
 	public static Vector3 globalPostOffset = new Vector3(0.0f, 0.0f, 0.0f);
 
@@ -86,6 +91,31 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	public GameObject GetRightWarpObject()
 	{
 		return this.rightWarpObject;
+	}
+
+	public void SetVertextPoint(int vertexIndex)
+	{
+		switch (vertexIndex)
+		{
+			case (int)VertexSelectedEnum.TOP_RIGHT:
+				this.SetVisualMarker(this.upperRightPosition);
+				break;
+			case (int)VertexSelectedEnum.TOP_LEFT:
+				this.SetVisualMarker(this.upperLeftPosition);
+				break;
+			case (int)VertexSelectedEnum.BOTTOM_LEFT:
+				this.SetVisualMarker(this.lowerLeftPosition);
+
+				break;
+			case (int)VertexSelectedEnum.BOTTOM_RIGHT:
+				this.SetVisualMarker(this.lowerRightPosition);
+				break;
+		}
+	}
+
+	private void SetVisualMarker(Vector2 pos)
+	{
+		this.visualMarkerInstance.transform.localPosition = pos;
 	}
 
 	[ContextMenu("Load Warp File")]
@@ -385,6 +415,10 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 			{
 				SetupPostProcessing();
 				initialized = true;
+				if (this.visualMarker != null)
+				{
+					this.visualMarkerInstance = Instantiate(this.visualMarker, this.GetRightWarpObject().transform);
+				}
 			}
 		}
 		else
