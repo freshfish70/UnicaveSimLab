@@ -1,4 +1,4 @@
-﻿//MIT License
+//MIT License
 //Copyright 2016-Present 
 //Ross Tredinnick
 //Benny Wysong-Grass
@@ -53,11 +53,40 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	public Vector2 lowerLeftPosition;
 	public Vector2 lowerRightPosition;
 
+	/// <summary>
+	/// Holds a reference to the left warp post process GameObject
+	/// </summary>
+	private GameObject leftWarpObject;
+
+	/// <summary>
+	/// Holds a reference to the right warp post process GameObject
+	/// </summary>
+	private GameObject rightWarpObject;
+
 	[Tooltip("Proportion of screenspace to blend")]
 	public float rightBlend, topBlend, leftBlend, bottomBlend;
 
 	[Tooltip("The resolution the camera will render at before warp correction")]
 	public Vector2Int resolution = new Vector2Int(1280, 720);
+
+	/// <summary>
+	/// Returns the left warp post process object
+	/// </summary>
+	/// <returns>the right warp post process GameObject</returns>
+	public GameObject GetLeftWarpObject()
+	{
+		return this.leftWarpObject;
+	}
+
+	/// <summary>
+	/// Returns the right warp post process object
+	/// Can be NULL
+	/// </summary>
+	/// <returns>the right warp post process GameObject</returns>
+	public GameObject GetRightWarpObject()
+	{
+		return this.rightWarpObject;
+	}
 
 	[ContextMenu("Load Warp File")]
 	public void LoadWarpFile()
@@ -112,7 +141,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		if (display.leftCam != null)
 		{
 			//create left child object that will contain the dewarping mesh
-			leftChild = new GameObject("Dewarp Mesh (left) For: " + gameObject.name);
+			this.leftWarpObject = leftChild = new GameObject("Dewarp Mesh (left) For: " + gameObject.name);
 			leftChild.layer = 8;
 			leftChild.transform.parent = staticParent.transform;
 
@@ -172,7 +201,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		if (display.rightCam != null)
 		{
 			//create right child object that will contain the dewarping mesh
-			rightChild = new GameObject("Dewarp Mesh (right) For: " + gameObject.name);
+			this.rightWarpObject = rightChild = new GameObject("Dewarp Mesh (right) For: " + gameObject.name);
 			rightChild.layer = 8;
 			rightChild.transform.parent = staticParent.transform;
 
