@@ -320,6 +320,21 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		return initialized;
 	}
 
+	/// <summary>
+	/// Loads warp files only if we have checked <c>loadConfigOnStart</c> and
+	/// we are not in the editor
+	/// </summary>
+	void Awake()
+	{
+#if !UNITY_EDITOR
+		if (this.loadConfigOnStart)
+		{
+			this.LoadWarpFile();
+		}
+#endif
+
+	}
+
 	void Start()
 	{
 		PhysicalDisplay disp = gameObject.GetComponent<PhysicalDisplay>();
@@ -330,11 +345,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		Vector2 shift = new Vector2((leftBlend + rightBlend) * disp.halfWidth(), (bottomBlend + topBlend) * disp.halfHeight());
 		disp.width += shift.x;
 		disp.height += shift.y;
-
-		if (this.loadConfigOnStart)
-		{
-			this.LoadWarpFile();
-		}
 	}
 
 	private bool initialized = false;
