@@ -140,4 +140,8 @@ public class PhysicalDisplayCalibrationSaver : MonoBehaviour
 		}
 	}
 
+	private void OnDestroy() {
+		this.SaveCalibrations();
+	}
+
 }
