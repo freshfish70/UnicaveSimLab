@@ -161,24 +161,45 @@ public class RealtimeCalibrator : NetworkBehaviour
 		this.InfoDisplayShift(selectedIndex);
 	}
 
-	void Update()
-	{
-		if (Input.GetKeyDown(KeyCode.Return))
-		{
-			selectedIndex = (selectedIndex + 1) % allOptions.Count;
+	private void VertexShift(Vector2 direction, float delta){
+			LocalShift(direction, delta, selectedIndex, vertexIndex);
+			RpcShift(direction, delta, selectedIndex, vertexIndex);
+	}
+
+	private void DisplayShift(){
 			InfoDisplayShift(selectedIndex);
 			RpcInfoDisplayShift(selectedIndex);
-		}
+	}
 
-		if (Input.GetKeyDown(KeyCode.Tab))
-		{
-			vertexIndex = (vertexIndex + 1) % 4;
-		}
+	void Update()
+	{
 
-		if (allOptions.Count == 0) { return; }
 
 		Vector2 direction = Vector2.zero;
 		bool anyPressed = false;
+		bool noOptions = allOptions.Count == 0;
+
+		if (Input.GetKeyDown(KeyCode.Tab))
+		{
+			this.vertexIndex = (vertexIndex + 1) % 4;
+			if (!noOptions){
+			 this.VertexShift(direction, 1f);
+			}
+		}
+
+		if (Input.GetKeyDown(KeyCode.Return))
+		{
+			this.selectedIndex = (selectedIndex + 1) % allOptions.Count;
+			if (!noOptions){
+			 	DisplayShift();
+
+				VertexShift(direction, 1f);
+			}
+
+		}
+
+		if (noOptions) { return; }
+
 		if (Input.GetKey(KeyCode.RightArrow))
 		{
 			direction.x = 1;
@@ -205,8 +226,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 			Debug.Log("RealtimeCalibration: isServer = " + isServer);
 			if (isServer)
 			{
-				LocalShift(direction, 0.005f, selectedIndex, vertexIndex);
-				RpcShift(direction, 0.005f, selectedIndex, vertexIndex);
+				VertexShift(direction, 0.005f);
 			}
 		}
 	}
