@@ -93,6 +93,10 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		return this.rightWarpObject;
 	}
 
+	/// <summary>
+	/// Se
+	/// </summary>
+	/// <param name="vertexIndex"></param>
 	public void SetVertextPoint(int vertexIndex)
 	{
 		switch (vertexIndex)
@@ -113,9 +117,15 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Sets the visual marker on the corner that is beeing adjusted.
+	/// Adds the visual multiplier factor based on display ratio.
+	/// </summary>
+	/// <param name="pos">the vertex position</param>
 	private void SetVisualMarker(Vector2 pos)
 	{
-		this.visualMarkerInstance.transform.localPosition = pos;
+		if (this.visualMarkerInstance == null) return;
+		this.visualMarkerInstance.transform.localPosition = pos * GetMultiplierFactor();
 	}
 
 	[ContextMenu("Load Warp File")]
@@ -169,61 +179,61 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 
 		bool stereo = true;
 		if (display.leftCam != null)
-		{
-			//create left child object that will contain the dewarping mesh
-			this.leftWarpObject = leftChild = new GameObject("Dewarp Mesh (left) For: " + gameObject.name);
-			leftChild.layer = 8;
-			leftChild.transform.parent = staticParent.transform;
+        {
+            //create left child object that will contain the dewarping mesh
+            this.leftWarpObject = leftChild = new GameObject("Dewarp Mesh (left) For: " + gameObject.name);
+            leftChild.layer = 8;
+            leftChild.transform.parent = staticParent.transform;
 
-			//add the dewarping mesh to the left child
-			MeshFilter meshComponent = leftChild.AddComponent<MeshFilter>();
-			Mesh mesh = new Mesh();
-			Vector2 multiplier = new Vector2(displayRatio, 1.0f);
-			Vector3[] verts = {
-				upperRightPosition * multiplier,
-				upperLeftPosition * multiplier,
-				lowerLeftPosition * multiplier,
-				lowerRightPosition * multiplier
-			};
-			Vector2[] uvs = {
-				new Vector2(1.0f, 1.0f),
-				new Vector2(0.0f, 1.0f),
-				new Vector2(0.0f, 0.0f),
-				new Vector2(1.0f, 0.0f)
-			};
-			Vector3[] normals = {
-				-Vector3.forward,
-				-Vector3.forward,
-				-Vector3.forward,
-				-Vector3.forward
-			};
-			int[] triangles = {
-				0, 2, 1,
-				0, 3, 2
-			};
-			mesh.vertices = verts;
-			mesh.triangles = triangles;
-			mesh.uv = uvs;
-			mesh.normals = normals;
-			meshComponent.mesh = mesh;
-			leftChild.layer = 8; //post processing layer is 8
+            //add the dewarping mesh to the left child
+            MeshFilter meshComponent = leftChild.AddComponent<MeshFilter>();
+            Mesh mesh = new Mesh();
+            Vector2 multiplier = GetMultiplierFactor();
+            Vector3[] verts = {
+                upperRightPosition * multiplier,
+                upperLeftPosition * multiplier,
+                lowerLeftPosition * multiplier,
+                lowerRightPosition * multiplier
+            };
+            Vector2[] uvs = {
+                new Vector2(1.0f, 1.0f),
+                new Vector2(0.0f, 1.0f),
+                new Vector2(0.0f, 0.0f),
+                new Vector2(1.0f, 0.0f)
+            };
+            Vector3[] normals = {
+                -Vector3.forward,
+                -Vector3.forward,
+                -Vector3.forward,
+                -Vector3.forward
+            };
+            int[] triangles = {
+                0, 2, 1,
+                0, 3, 2
+            };
+            mesh.vertices = verts;
+            mesh.triangles = triangles;
+            mesh.uv = uvs;
+            mesh.normals = normals;
+            meshComponent.mesh = mesh;
+            leftChild.layer = 8; //post processing layer is 8
 
-			//create material for left mesh
-			leftRenderMat = new Material(postProcessMaterial);
-			leftRenderMat.name = "Left Material";
+            //create material for left mesh
+            leftRenderMat = new Material(postProcessMaterial);
+            leftRenderMat.name = "Left Material";
 
-			//create render texture for left camera
-			display.leftCam.cullingMask &= ~(1 << 8); //remove post processing layer of the worldspace camera
-			Vector3 oldPos = display.leftCam.transform.localPosition;
-			display.leftCam.stereoTargetEye = StereoTargetEyeMask.None;
-			display.leftCam.transform.localPosition = oldPos;
+            //create render texture for left camera
+            display.leftCam.cullingMask &= ~(1 << 8); //remove post processing layer of the worldspace camera
+            Vector3 oldPos = display.leftCam.transform.localPosition;
+            display.leftCam.stereoTargetEye = StereoTargetEyeMask.None;
+            display.leftCam.transform.localPosition = oldPos;
 
-			//assign the render texture to the material and the material to the mesh
-			leftRenderMat.mainTexture = display.leftTex;
-			leftChild.AddComponent<MeshRenderer>().material = leftRenderMat;
+            //assign the render texture to the material and the material to the mesh
+            leftRenderMat.mainTexture = display.leftTex;
+            leftChild.AddComponent<MeshRenderer>().material = leftRenderMat;
 
-		}
-		else
+        }
+        else
 		{
 			stereo = false;
 		}
@@ -238,7 +248,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 			//add the dewarping mesh to the right child
 			MeshFilter meshComponent = rightChild.AddComponent<MeshFilter>();
 			Mesh mesh = new Mesh();
-			Vector2 multiplier = new Vector2(displayRatio, 1.0f);
+			Vector2 multiplier = GetMultiplierFactor();
 			Vector3[] verts = {
 				upperRightPosition * multiplier,
 				upperLeftPosition * multiplier,
@@ -336,7 +346,17 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		globalPostOffset = globalPostOffset + new Vector3(10, 10, 10);
 	}
 
-	void OnDrawGizmosSelected()
+	/// <summary>
+	/// Calculates the vertext muliplier factor based on the display ratio
+	/// for the display
+	/// </summary>
+	/// <returns>Mulitplier factor for vertex position</returns>
+    private Vector2 GetMultiplierFactor()
+    {
+        return new Vector2(displayRatio, 1.0f);
+    }
+
+    void OnDrawGizmosSelected()
 	{
 #if UNITY_EDITOR
 		if (EditorApplication.isPlaying) return;
