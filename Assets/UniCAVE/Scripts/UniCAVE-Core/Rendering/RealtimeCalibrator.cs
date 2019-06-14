@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -130,14 +130,17 @@ public class RealtimeCalibrator : NetworkBehaviour
 
 		if (currentDisplay != null && this.display != null)
 		{
-			this.leftInfoDisplayInstance.gameObject.SetActive(true);
-			this.rightInfoDisplayInstance.gameObject.SetActive(true);
+			if (this.leftInfoDisplayInstance != null){
+				this.leftInfoDisplayInstance?.gameObject.SetActive(true);
+				this.leftInfoDisplayInstance?.transform.SetParent(currentDisplay.GetLeftWarpObject().transform);
+				this.leftInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
+			}
+			if (this.rightInfoDisplayInstance != null){
+				this.rightInfoDisplayInstance?.gameObject.SetActive(true);
+				this.rightInfoDisplayInstance?.transform.SetParent(currentDisplay.GetRightWarpObject().transform);
+				this.rightInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
+			}
 
-			this.leftInfoDisplayInstance.transform.SetParent(currentDisplay.GetLeftWarpObject().transform);
-			this.rightInfoDisplayInstance.transform.SetParent(currentDisplay.GetRightWarpObject().transform);
-
-			this.leftInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
-			this.rightInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
 		}
 
 	}
