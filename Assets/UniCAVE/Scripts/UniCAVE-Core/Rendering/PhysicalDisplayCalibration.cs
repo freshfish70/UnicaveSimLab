@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using System.IO;
 #if UNITY_EDITOR
@@ -25,6 +26,18 @@ using UnityEditor;
 [RequireComponent(typeof(PhysicalDisplay))]
 public class PhysicalDisplayCalibration : MonoBehaviour
 {
+
+	/// <summary>
+	/// Used to set which head/eye camera we're
+	/// holding on
+	/// </summary>
+	public enum HeadCamera
+	{
+		LEFT,
+		RIGHT,
+		CENTER
+	}
+
 	/// <summary>
 	/// Flag to enable/disable if we want to load the config file
 	/// when the object starts.
@@ -33,15 +46,24 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	[SerializeField]
 	private bool loadConfigOnStart = true;
 
-	[SerializeField]
-	private SpriteRenderer visualMarker;
+	/// <summary>
+	/// Visual marker instance, displayes the cornber we are curently
+	/// modifying
+	/// </summary>
+	private LineRenderer visualMarkerInstance;
 
-	private SpriteRenderer visualMarkerInstance;
-
+	/// <summary>
+	/// Offset to where to place the next dewarp
+	/// mesh, so it doesnt collide with other meshes.
+	/// </summary>
+	/// <returns></returns>
 	public static Vector3 globalPostOffset = new Vector3(0.0f, 0.0f, 0.0f);
 
-	public bool loadAtRuntime = false;
-
+	/// <summary>
+	/// The display ratio for the the display this 
+	/// calibration is attached to.
+	/// </summary>
+	/// <value></value>
 	public float displayRatio
 	{
 		get
@@ -50,47 +72,72 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Holds the numer of the post processing layer used
+	/// for rendering the post processing (dewarp rendering)
+	/// </summary>
+	[SerializeField, Layer]
+	[Tooltip("The layer where post processing should be rendered")]
+	private int postProcessLayer;
+
+	/// <summary>
+	/// The material used for dewarping/edge blending
+	/// </summary>
 	[Tooltip("This should be an unlit textured material")]
 	public Material postProcessMaterial;
 
-	public Vector2 upperRightPosition;
-	public Vector2 upperLeftPosition;
-	public Vector2 lowerLeftPosition;
-	public Vector2 lowerRightPosition;
+	/// <summary>
+	/// Positions of the dewarp mesh (corner vertecies)
+	/// </summary>
+	[SerializeField]
+	private Dewarp.DewarpMeshPosition dewarpMeshPositions;
 
 	/// <summary>
-	/// Holds a reference to the left warp post process GameObject
+	/// Holds all the display <c>Dewarp</c> instances
 	/// </summary>
-	private GameObject leftWarpObject;
+	/// <typeparam name="HeadCamera">The camera that the warp is respoible for</typeparam>
+	/// <typeparam name="Dewarp">The dewarp object</typeparam>
+	/// <returns></returns>
+	private Dictionary<HeadCamera, Dewarp> displayWarp = new Dictionary<HeadCamera, Dewarp>();
 
 	/// <summary>
-	/// Holds a reference to the right warp post process GameObject
+	/// The proportion of the screenspace to blend with other screens
 	/// </summary>
-	private GameObject rightWarpObject;
-
 	[Tooltip("Proportion of screenspace to blend")]
 	public float rightBlend, topBlend, leftBlend, bottomBlend;
 
+	/// <summary>
+	/// The resolution the camera will render at before warp correction
+	/// </summary>
+	/// <returns></returns>
 	[Tooltip("The resolution the camera will render at before warp correction")]
 	public Vector2Int resolution = new Vector2Int(1280, 720);
 
 	/// <summary>
-	/// Returns the left warp post process object
+	/// Holds the display for this calibration
 	/// </summary>
-	/// <returns>the right warp post process GameObject</returns>
-	public GameObject GetLeftWarpObject()
-	{
-		return this.leftWarpObject;
-	}
+	private PhysicalDisplay display;
 
 	/// <summary>
-	/// Returns the right warp post process object
-	/// Can be NULL
+	/// 
 	/// </summary>
-	/// <returns>the right warp post process GameObject</returns>
-	public GameObject GetRightWarpObject()
+	public GameObject camChild;
+
+	/// <summary>
+	/// Holds the post effect render cameras for the the dewarp meshes
+	/// </summary>
+	/// <typeparam name="Camera"></typeparam>
+	/// <returns></returns>
+	public List<Camera> postCams = new List<Camera>();
+
+	/// <summary>
+	/// Returs the display that this calibration
+	/// handles.
+	/// </summary>
+	/// <returns>the display of this calibration</returns>
+	public PhysicalDisplay GetDisplay()
 	{
-		return this.rightWarpObject;
+		return this.display;
 	}
 
 	/// <summary>
@@ -102,17 +149,17 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		switch (vertexIndex)
 		{
 			case (int)VertexSelectedEnum.TOP_RIGHT:
-				this.SetVisualMarker(this.upperRightPosition);
+				this.SetVisualMarker(this.dewarpMeshPositions.upperRightPosition);
 				break;
 			case (int)VertexSelectedEnum.TOP_LEFT:
-				this.SetVisualMarker(this.upperLeftPosition);
+				this.SetVisualMarker(this.dewarpMeshPositions.upperLeftPosition);
 				break;
 			case (int)VertexSelectedEnum.BOTTOM_LEFT:
-				this.SetVisualMarker(this.lowerLeftPosition);
+				this.SetVisualMarker(this.dewarpMeshPositions.lowerLeftPosition);
 
 				break;
 			case (int)VertexSelectedEnum.BOTTOM_RIGHT:
-				this.SetVisualMarker(this.lowerRightPosition);
+				this.SetVisualMarker(this.dewarpMeshPositions.lowerRightPosition);
 				break;
 		}
 	}
@@ -125,9 +172,12 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	private void SetVisualMarker(Vector2 pos)
 	{
 		if (this.visualMarkerInstance == null) return;
-		this.visualMarkerInstance.transform.localPosition = pos * GetMultiplierFactor();
+		this.visualMarkerInstance.SetPosition(1, this.visualMarkerInstance.transform.parent.localToWorldMatrix.MultiplyPoint3x4(pos * GetMultiplierFactor()));
 	}
 
+	/// <summary>
+	/// Loads the warp positions for the this calibration
+	/// </summary>
 	[ContextMenu("Load Warp File")]
 	public void LoadWarpFile()
 	{
@@ -143,10 +193,10 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 				string[] parts = str.Split(',');
 				vecs.Add(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
 			}
-			upperRightPosition = vecs[0];
-			upperLeftPosition = vecs[1];
-			lowerLeftPosition = vecs[2];
-			lowerRightPosition = vecs[3];
+			this.dewarpMeshPositions.upperRightPosition = vecs[0];
+			this.dewarpMeshPositions.upperLeftPosition = vecs[1];
+			this.dewarpMeshPositions.lowerLeftPosition = vecs[2];
+			this.dewarpMeshPositions.lowerRightPosition = vecs[3];
 #if UNITY_EDITOR
 			EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
 #endif
@@ -156,194 +206,217 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 			Debug.Log("Warp file does not exist...");
 		}
 	}
+
+	/// <summary>
+	/// Saves the warp positions for the this calibration
+	/// </summary>
 	[ContextMenu("Save Warp File")]
 	public void SaveWarpFile()
 	{
 		File.WriteAllText(Util.ObjectFullName(gameObject) + ".txt",
-			upperRightPosition.x + "," + upperRightPosition.y + "\n" +
-			upperLeftPosition.x + "," + upperLeftPosition.y + "\n" +
-			lowerLeftPosition.x + "," + lowerLeftPosition.y + "\n" +
-			lowerRightPosition.x + "," + lowerRightPosition.y);
+			this.dewarpMeshPositions.upperRightPosition.x + "," + this.dewarpMeshPositions.upperRightPosition.y + "\n" +
+			this.dewarpMeshPositions.upperLeftPosition.x + "," + this.dewarpMeshPositions.upperLeftPosition.y + "\n" +
+			this.dewarpMeshPositions.lowerLeftPosition.x + "," + this.dewarpMeshPositions.lowerLeftPosition.y + "\n" +
+			this.dewarpMeshPositions.lowerRightPosition.x + "," + this.dewarpMeshPositions.lowerRightPosition.y);
 	}
 
-	public GameObject leftChild, rightChild, camChild;
 
-	private Material leftRenderMat, rightRenderMat;
+	/// <summary>
+	/// Returns a dictionary of <c>Dewarp</c> object(s)
+	/// with the respnsible camera as key and Dewarp objext as value.
+	/// </summary>
+	/// <returns>dictionary of calibration meshes</returns>
+	public Dictionary<HeadCamera, Dewarp> GetDisplayWarps()
+	{
+		return this.displayWarp;
+	}
 
-	public List<Camera> postCams = new List<Camera>();
+	/// <summary>
+	/// Returns the <c>Dewarp</c> object(s) only for
+	/// this calibration.
+	/// </summary>
+	/// <returns></returns>
+	public IEnumerable<Dewarp> GetDisplayWarpsValues()
+	{
+		return this.displayWarp.Values;
+	}
 
+	/// <summary>
+	/// Initialize the post processing setup.
+	/// Setup game objects for the dewarp/edge blend effects for 
+	/// each camera for the attaached <c>PhysicalDisplay</c>
+	/// </summary>
 	void SetupPostProcessing()
 	{
-		PhysicalDisplay display = GetComponent<PhysicalDisplay>();
 		GameObject staticParent = new GameObject("Post Holder For: " + gameObject.name);
 
+		dewarpMeshPositions.upperRightPosition *= GetMultiplierFactor();
+		dewarpMeshPositions.upperLeftPosition *= GetMultiplierFactor();
+		dewarpMeshPositions.lowerRightPosition *= GetMultiplierFactor();
+		dewarpMeshPositions.lowerLeftPosition *= GetMultiplierFactor();
+
 		bool stereo = true;
-		if (display.leftCam != null)
-        {
-            //create left child object that will contain the dewarping mesh
-            this.leftWarpObject = leftChild = new GameObject("Dewarp Mesh (left) For: " + gameObject.name);
-            leftChild.layer = 8;
-            leftChild.transform.parent = staticParent.transform;
 
-            //add the dewarping mesh to the left child
-            MeshFilter meshComponent = leftChild.AddComponent<MeshFilter>();
-            Mesh mesh = new Mesh();
-            Vector2 multiplier = GetMultiplierFactor();
-            Vector3[] verts = {
-                upperRightPosition * multiplier,
-                upperLeftPosition * multiplier,
-                lowerLeftPosition * multiplier,
-                lowerRightPosition * multiplier
-            };
-            Vector2[] uvs = {
-                new Vector2(1.0f, 1.0f),
-                new Vector2(0.0f, 1.0f),
-                new Vector2(0.0f, 0.0f),
-                new Vector2(1.0f, 0.0f)
-            };
-            Vector3[] normals = {
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward
-            };
-            int[] triangles = {
-                0, 2, 1,
-                0, 3, 2
-            };
-            mesh.vertices = verts;
-            mesh.triangles = triangles;
-            mesh.uv = uvs;
-            mesh.normals = normals;
-            meshComponent.mesh = mesh;
-            leftChild.layer = 8; //post processing layer is 8
-
-            //create material for left mesh
-            leftRenderMat = new Material(postProcessMaterial);
-            leftRenderMat.name = "Left Material";
-
-            //create render texture for left camera
-            display.leftCam.cullingMask &= ~(1 << 8); //remove post processing layer of the worldspace camera
-            Vector3 oldPos = display.leftCam.transform.localPosition;
-            display.leftCam.stereoTargetEye = StereoTargetEyeMask.None;
-            display.leftCam.transform.localPosition = oldPos;
-
-            //assign the render texture to the material and the material to the mesh
-            leftRenderMat.mainTexture = display.leftTex;
-            leftChild.AddComponent<MeshRenderer>().material = leftRenderMat;
-
-        }
-        else
+		if (this.GetDisplay().is3D)
 		{
-			stereo = false;
-		}
+			if (this.GetDisplay().leftCam != null)
+			{
+				this.displayWarp.Add(HeadCamera.LEFT, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().leftTex));
+				this.RemovePostProcessingFromHeadCamera(this.GetDisplay().leftCam);
+			}
+			else
+			{
+				stereo = false;
+			}
 
-		if (display.rightCam != null)
-		{
-			//create right child object that will contain the dewarping mesh
-			this.rightWarpObject = rightChild = new GameObject("Dewarp Mesh (right) For: " + gameObject.name);
-			rightChild.layer = 8;
-			rightChild.transform.parent = staticParent.transform;
-
-			//add the dewarping mesh to the right child
-			MeshFilter meshComponent = rightChild.AddComponent<MeshFilter>();
-			Mesh mesh = new Mesh();
-			Vector2 multiplier = GetMultiplierFactor();
-			Vector3[] verts = {
-				upperRightPosition * multiplier,
-				upperLeftPosition * multiplier,
-				lowerLeftPosition * multiplier,
-				lowerRightPosition * multiplier
-			};
-			Vector2[] uvs = {
-				new Vector2(1.0f, 1.0f),
-				new Vector2(0.0f, 1.0f),
-				new Vector2(0.0f, 0.0f),
-				new Vector2(1.0f, 0.0f)
-			};
-			Vector3[] normals = {
-				-Vector3.forward,
-				-Vector3.forward,
-				-Vector3.forward,
-				-Vector3.forward
-			};
-			int[] triangles = {
-				0, 2, 1,
-				0, 3, 2
-			};
-			mesh.vertices = verts;
-			mesh.triangles = triangles;
-			mesh.uv = uvs;
-			mesh.normals = normals;
-			meshComponent.mesh = mesh;
-			rightChild.layer = 8; //post processing layer is 8
-
-			//create material for right mesh
-			rightRenderMat = new Material(postProcessMaterial);
-			rightRenderMat.name = "Right Material";
-
-			//create render texture for right camera
-			display.rightCam.cullingMask &= ~(1 << 8); //remove post processing layer of the worldspace camera
-			Vector3 oldPos = display.rightCam.transform.localPosition;
-			display.rightCam.stereoTargetEye = StereoTargetEyeMask.None;
-			display.rightCam.transform.localPosition = oldPos;
-
-			//assign the render texture to the material and the material to the mesh
-			rightRenderMat.mainTexture = display.rightTex;
-			rightChild.AddComponent<MeshRenderer>().material = rightRenderMat;
+			if (this.GetDisplay().rightCam != null)
+			{
+				this.displayWarp.Add(HeadCamera.RIGHT, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().rightTex));
+				this.RemovePostProcessingFromHeadCamera(this.GetDisplay().rightCam);
+			}
+			else
+			{
+				stereo = false;
+			}
 		}
 		else
 		{
 			stereo = false;
+			this.displayWarp.Add(HeadCamera.CENTER, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().centerTex));
+			this.RemovePostProcessingFromHeadCamera(this.GetDisplay().centerCam);
 		}
 
-		//set the positions of the dewarping mesh children
-		//we have to do this later because if its not stereo only one exists and it should be at the center of the screen
-		if (leftChild != null) leftChild.transform.localPosition = globalPostOffset + new Vector3(stereo ? -displayRatio * 2.0f : 0.0f, 0.0f, 0.0f);
-		if (rightChild != null) rightChild.transform.localPosition = globalPostOffset + new Vector3(stereo ? displayRatio * 2.0f : 0.0f, 0.0f, 0.0f);
+		this.SetDewarpPositions(stereo);
 
+		foreach (var warp in this.displayWarp)
+		{
+			GameObject obj = warp.Value.GetDewarpGameObject();
+			obj.layer = this.postProcessLayer;
+			obj.transform.parent = staticParent.transform;
+		}
 
 		{
 			camChild = new GameObject("Calibration Cam (Left)");
 			camChild.transform.parent = staticParent.transform;
 			Camera postCam = camChild.AddComponent<Camera>();
 			postCam.transform.localPosition = globalPostOffset + new Vector3(stereo ? -displayRatio * 2.0f : 0.0f, 0.0f, -1.0f);
-			postCam.nearClipPlane = 0.1f;
-			postCam.farClipPlane = 10.0f;
-			postCam.fieldOfView = 90.0f;
-			postCam.stereoSeparation = 0.0f;
-			postCam.stereoConvergence = 1000.0f; //probably doesn't matter but far away makes the most sense
-			postCam.cullingMask = 1 << 8; //post processing layer
-			postCam.backgroundColor = Color.black;
-			postCam.clearFlags = CameraClearFlags.SolidColor;
-			postCam.depth = 1;
 			postCam.stereoTargetEye = StereoTargetEyeMask.Left;
-			postCam.allowHDR = false;
-			postCam.allowMSAA = false;
-			postCam.renderingPath = RenderingPath.Forward;
+			this.SetPostCameraProperties(postCam);
 			postCams.Add(postCam);
 		}
 		{
-			GameObject obj2 = new GameObject("Calibration Cam (Right)");
-			obj2.transform.parent = staticParent.transform;
-			Camera postCam = obj2.AddComponent<Camera>();
+			GameObject calibrationCamera = new GameObject("Calibration Cam (Right)");
+			calibrationCamera.transform.parent = staticParent.transform;
+			Camera postCam = calibrationCamera.AddComponent<Camera>();
 			postCam.transform.localPosition = globalPostOffset + new Vector3(stereo ? displayRatio * 2.0f : 0.0f, 0.0f, -1.0f);
-			postCam.nearClipPlane = 0.1f;
-			postCam.farClipPlane = 10.0f;
-			postCam.fieldOfView = 90.0f;
-			postCam.stereoSeparation = 0.0f;
-			postCam.stereoConvergence = 1000.0f; //probably doesn't matter but far away makes the most sense
-			postCam.cullingMask = 1 << 8; //post processing layer
-			postCam.backgroundColor = Color.black;
-			postCam.clearFlags = CameraClearFlags.SolidColor;
-			postCam.depth = 1;
 			postCam.stereoTargetEye = StereoTargetEyeMask.Right;
-			postCam.allowHDR = false;
-			postCam.allowMSAA = false;
-			postCam.renderingPath = RenderingPath.Forward;
+			this.SetPostCameraProperties(postCam);
 			postCams.Add(postCam);
 		}
 		globalPostOffset = globalPostOffset + new Vector3(10, 10, 10);
+
+	}
+
+	/// <summary>
+	/// Sets the positions for the dewarp meshes
+	/// added to <c>displayWarp</c> dictionary
+	/// </summary>
+	/// <param name="stereo">true if current display is stereo</param>
+	private void SetDewarpPositions(bool stereo)
+	{
+
+		//set the positions of the dewarping mesh children
+		//we have to do this later because if its not stereo only one exists and it should be at the center of the screen
+		if (this.displayWarp.ContainsKey(HeadCamera.LEFT))
+		{
+			Transform trans = this.displayWarp[HeadCamera.LEFT].GetDewarpGameObject().transform;
+			trans.localPosition = globalPostOffset + new Vector3(stereo ? -displayRatio * 2.0f : 0.0f, 0.0f, 0.0f);
+			this.CreateVisualMarker(trans);
+		}
+
+		if (this.displayWarp.ContainsKey(HeadCamera.RIGHT))
+		{
+			Transform trans = this.displayWarp[HeadCamera.RIGHT].GetDewarpGameObject().transform;
+			trans.localPosition = globalPostOffset + new Vector3(stereo ? displayRatio * 2.0f : 0.0f, 0.0f, 0.0f);
+			this.CreateVisualMarker(trans);
+		}
+
+		if (this.displayWarp.ContainsKey(HeadCamera.CENTER))
+		{
+			Transform trans = this.displayWarp[HeadCamera.CENTER].GetDewarpGameObject().transform;
+			trans.localPosition = globalPostOffset + new Vector3(0.0f, 0.0f, 0.0f);
+			this.CreateVisualMarker(trans);
+		}
+
+	}
+
+	/// <summary>
+	/// Creates the visual marker when calibrating
+	/// </summary>
+	/// <param name="parent">the parent of the marker</param>
+	private void CreateVisualMarker(Transform parent)
+	{
+		GameObject render = new GameObject("Visual renderer");
+		render.layer = this.postProcessLayer;
+		render.transform.parent = parent;
+
+		this.visualMarkerInstance = render.AddComponent<LineRenderer>();
+		this.visualMarkerInstance.useWorldSpace = false;
+
+		Vector3[] pos = { parent.transform.position + new Vector3(0, 0, -.1f), parent.transform.localPosition };
+		this.visualMarkerInstance.SetPositions(pos);
+		this.visualMarkerInstance.startWidth = 0.008f;
+	}
+
+	/// <summary>
+	/// Set post process camera attributes
+	/// </summary>
+	/// <param name="postCam">the camera to set attributes on</param>
+	private void SetPostCameraProperties(Camera postCam)
+	{
+		postCam.nearClipPlane = 0.1f;
+		postCam.farClipPlane = 10.0f;
+		postCam.fieldOfView = 90.0f;
+		postCam.stereoSeparation = 0.0f;
+		postCam.stereoConvergence = 1000.0f; //probably doesn't matter but far away makes the most sense
+		postCam.cullingMask = 1 << this.postProcessLayer; //post processing layer
+		postCam.backgroundColor = Color.black;
+		postCam.clearFlags = CameraClearFlags.SolidColor;
+		postCam.depth = 1;
+		postCam.allowHDR = false;
+		postCam.allowMSAA = false;
+		postCam.renderingPath = RenderingPath.Forward;
+	}
+
+	/// <summary>
+	/// Updats the dewarp/edgeblend mesh edge vertecies positions
+	/// after a mesh has been modified.
+	/// </summary>
+	public void UpdateMeshPositions(Vector3[] vertex)
+	{
+		if (vertex != null)
+		{
+			this.dewarpMeshPositions.upperRightPosition = new Vector3(vertex[0].x / this.displayRatio, vertex[0].y);
+			this.dewarpMeshPositions.upperLeftPosition = new Vector3(vertex[1].x / this.displayRatio, vertex[1].y);
+			this.dewarpMeshPositions.lowerLeftPosition = new Vector3(vertex[2].x / this.displayRatio, vertex[2].y);
+			this.dewarpMeshPositions.lowerRightPosition = new Vector3(vertex[3].x / this.displayRatio, vertex[3].y);
+			this.SaveWarpFile();
+		}
+
+	}
+
+	/// <summary>
+	/// Removes post processing layer from head/eye camera, so we dont
+	/// get the post processing meshes in the head/eye camera when we render to
+	/// the post processing mesh. And set StereoTargetEyeMask to none. 
+	/// </summary>
+	/// <param name="camera">the head camera</param>
+	private void RemovePostProcessingFromHeadCamera(Camera camera)
+	{
+		camera.cullingMask &= ~(1 << this.postProcessLayer); //remove post processing layer of the worldspace camera
+		Vector3 oldPos = camera.transform.localPosition;
+		camera.stereoTargetEye = StereoTargetEyeMask.None;
+		camera.transform.localPosition = oldPos;
 	}
 
 	/// <summary>
@@ -351,12 +424,16 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	/// for the display
 	/// </summary>
 	/// <returns>Mulitplier factor for vertex position</returns>
-    private Vector2 GetMultiplierFactor()
-    {
-        return new Vector2(displayRatio, 1.0f);
-    }
+	private Vector2 GetMultiplierFactor()
+	{
+		return new Vector2(displayRatio, 1.0f);
+	}
 
-    void OnDrawGizmosSelected()
+	/// <summary>
+	/// Draws a line (blue/red) representing the blending
+	/// of the calibration. 
+	/// </summary>
+	void OnDrawGizmosSelected()
 	{
 #if UNITY_EDITOR
 		if (EditorApplication.isPlaying) return;
@@ -394,6 +471,10 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Returns initialized flag (true if initialized)
+	/// </summary>
+	/// <returns>initialized flag</returns>
 	public bool Initialized()
 	{
 		return initialized;
@@ -416,7 +497,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 
 	void Start()
 	{
-		PhysicalDisplay disp = gameObject.GetComponent<PhysicalDisplay>();
+		PhysicalDisplay disp = this.display = gameObject.GetComponent<PhysicalDisplay>();
 		disp.transform.localPosition = disp.transform.localPosition +
 			disp.transform.right.normalized * (rightBlend - leftBlend) * disp.halfWidth() * 0.5f +
 			disp.transform.up.normalized * (topBlend - bottomBlend) * disp.halfHeight() * 0.5f;
@@ -427,18 +508,15 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	}
 
 	private bool initialized = false;
+
 	void Update()
 	{
 		if (!initialized)
 		{
-			if (GetComponent<PhysicalDisplay>().Initialized())
+			if (this.display.Initialized())
 			{
 				SetupPostProcessing();
 				initialized = true;
-				if (this.visualMarker != null)
-				{
-					this.visualMarkerInstance = Instantiate(this.visualMarker, this.GetRightWarpObject().transform);
-				}
 			}
 		}
 		else

@@ -86,6 +86,11 @@ public class Dewarp
 	private Mesh warpMesh;
 
 	/// <summary>
+	/// Holds the reference to the dewarp mesh filter
+	/// </summary>
+	private MeshFilter warpMeshFilter;
+
+	/// <summary>
 	/// Render materioal
 	/// </summary>
 	private Material renderMaterial;
@@ -99,12 +104,12 @@ public class Dewarp
 	{
 		this.dewarpPositions = vertices;
 
-		dewarpObject = new GameObject(objectName + name);
+		dewarpObject = new GameObject(objectName + name + "HELLO");
 		dewarpObject.layer = 8;
 
-		MeshFilter meshComponent = dewarpObject.AddComponent<MeshFilter>();
+		this.warpMeshFilter = dewarpObject.AddComponent<MeshFilter>();
 
-		meshComponent.mesh = CreateMesh();
+		this.warpMeshFilter.mesh = CreateMesh();
 		dewarpObject.layer = 8; //post processing layer is 8
 
 		//create material for left warpMesh
@@ -154,6 +159,24 @@ public class Dewarp
 	public GameObject GetDewarpGameObject()
 	{
 		return this.dewarpObject;
+	}
+
+	/// <summary>
+	/// Returns the Dewarp mesh reference
+	/// </summary>
+	/// <returns>reference of the warp mesh</returns>
+	public Mesh GetDewarpMesh()
+	{
+		return this.warpMesh;
+	}
+
+	/// <summary>
+	/// Returns the Dewarp mesh filter reference
+	/// </summary>
+	/// <returns>reference of the warp mesh filter </returns>
+	public MeshFilter GetDewarpMeshFilter()
+	{
+		return this.warpMeshFilter;
 	}
 
 }

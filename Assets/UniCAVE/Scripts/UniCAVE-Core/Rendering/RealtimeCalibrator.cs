@@ -77,7 +77,6 @@ public class RealtimeCalibrator : NetworkBehaviour
 	private void CreateInfoDisplays()
 	{
 		if (this.display == null) return;
-
 		this.leftInfoDisplayInstance = Instantiate(display);
 		this.leftInfoDisplayInstance.gameObject.SetActive(false);
 
@@ -90,34 +89,21 @@ public class RealtimeCalibrator : NetworkBehaviour
 		PhysicalDisplayCalibration calibration = allOptions[selectedIndex].calibration;
 		calibration.SetVertextPoint(vertexIndex);
 		Debug.Log("RealtimeCalibration: LocalShift called " + delta + ", " + selectedIndex + ", " + vertexIndex);
-		List<MeshFilter> toUpdate = new List<MeshFilter>();
-		if (calibration.leftChild != null)
-		{
-			toUpdate.Add(calibration.leftChild.GetComponent<MeshFilter>());
-		}
-		if (calibration.rightChild != null)
-		{
-			toUpdate.Add(calibration.rightChild.GetComponent<MeshFilter>());
-		}
 
-		foreach (MeshFilter selected in toUpdate)
+
+		MeshFilter lastWarpedFilter = null;
+		foreach (Dewarp dewarp in calibration.GetDisplayWarpsValues())
 		{
-			Vector3[] verts = selected.sharedMesh.vertices;
+			MeshFilter meshFilter = dewarp.GetDewarpMeshFilter();
+			lastWarpedFilter = meshFilter;
+			Vector3[] verts = meshFilter.sharedMesh.vertices;
 			verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
-			selected.sharedMesh.vertices = verts;
-			selected.sharedMesh.UploadMeshData(false);
+			meshFilter.sharedMesh.vertices = verts;
+			meshFilter.sharedMesh.UploadMeshData(false);
 		}
 
-		if (toUpdate.Count != 0)
-		{
+		calibration.UpdateMeshPositions(lastWarpedFilter?.sharedMesh.vertices);
 
-			Vector3[] verts = toUpdate[0].sharedMesh.vertices;
-			calibration.upperRightPosition = new Vector3(verts[0].x / calibration.displayRatio, verts[0].y);
-			calibration.upperLeftPosition = new Vector3(verts[1].x / calibration.displayRatio, verts[1].y);
-			calibration.lowerLeftPosition = new Vector3(verts[2].x / calibration.displayRatio, verts[2].y);
-			calibration.lowerRightPosition = new Vector3(verts[3].x / calibration.displayRatio, verts[3].y);
-			calibration.SaveWarpFile();
-		}
 	}
 
 	/// <summary>
@@ -127,22 +113,37 @@ public class RealtimeCalibrator : NetworkBehaviour
 	private void InfoDisplayShift(int selectedIndex)
 	{
 		PhysicalDisplayCalibration currentDisplay = this.allOptions[selectedIndex].calibration;
+		if (currentDisplay == null || this.display == null) return;
 
-		if (currentDisplay != null && this.display != null)
-		{
-			if (this.leftInfoDisplayInstance != null){
-				this.leftInfoDisplayInstance?.gameObject.SetActive(true);
-				this.leftInfoDisplayInstance?.transform.SetParent(currentDisplay.GetLeftWarpObject().transform);
-				this.leftInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
-			}
-			if (this.rightInfoDisplayInstance != null){
-				this.rightInfoDisplayInstance?.gameObject.SetActive(true);
-				this.rightInfoDisplayInstance?.transform.SetParent(currentDisplay.GetRightWarpObject().transform);
-				this.rightInfoDisplayInstance.transform.localPosition = new Vector2(0, 0);
-			}
+		// if (currentDisplay.GetDisplay().is3D)
+		// {
+		// 	if (this.leftInfoDisplayInstance != null)
+		// 	{
+		// 		this.SetInfoDisplay(leftInfoDisplayInstance.gameObject, currentDisplay.GetLeftWarp().GetDewarpGameObject().transform);
+		// 	}
+		// 	if (this.rightInfoDisplayInstance != null)
+		// 	{
+		// 		this.SetInfoDisplay(leftInfoDisplayInstance.gameObject, currentDisplay.GetLeftWarp().GetDewarpGameObject().transform);
+		// 	}
+		// }
+		// else
+		// {
+		// 	this.SetInfoDisplay(leftInfoDisplayInstance.gameObject, currentDisplay.GetCenterWarp().GetDewarpGameObject().transform);
+		// }
 
-		}
+	}
 
+	/// <summary>
+	/// Activates the info display, sets it parent and resets its local position
+	/// so it is center to the parent
+	/// </summary>
+	/// <param name="infoDisplay"></param>
+	/// <param name="parent"></param>
+	private void SetInfoDisplay(GameObject infoDisplay, Transform parent)
+	{
+		infoDisplay.gameObject.SetActive(true);
+		infoDisplay.transform.SetParent(parent);
+		infoDisplay.transform.localPosition = new Vector2(0, 0);
 	}
 
 	[ClientRpc]
@@ -161,14 +162,16 @@ public class RealtimeCalibrator : NetworkBehaviour
 		this.InfoDisplayShift(selectedIndex);
 	}
 
-	private void VertexShift(Vector2 direction, float delta){
-			LocalShift(direction, delta, selectedIndex, vertexIndex);
-			RpcShift(direction, delta, selectedIndex, vertexIndex);
+	private void VertexShift(Vector2 direction, float delta)
+	{
+		LocalShift(direction, delta, selectedIndex, vertexIndex);
+		RpcShift(direction, delta, selectedIndex, vertexIndex);
 	}
 
-	private void DisplayShift(){
-			InfoDisplayShift(selectedIndex);
-			RpcInfoDisplayShift(selectedIndex);
+	private void DisplayShift()
+	{
+		InfoDisplayShift(selectedIndex);
+		RpcInfoDisplayShift(selectedIndex);
 	}
 
 	void Update()
@@ -182,16 +185,18 @@ public class RealtimeCalibrator : NetworkBehaviour
 		if (Input.GetKeyDown(KeyCode.Tab))
 		{
 			this.vertexIndex = (vertexIndex + 1) % 4;
-			if (!noOptions){
-			 this.VertexShift(direction, 1f);
+			if (!noOptions)
+			{
+				this.VertexShift(direction, 1f);
 			}
 		}
 
 		if (Input.GetKeyDown(KeyCode.Return))
 		{
 			this.selectedIndex = (selectedIndex + 1) % allOptions.Count;
-			if (!noOptions){
-			 	DisplayShift();
+			if (!noOptions)
+			{
+				DisplayShift();
 
 				VertexShift(direction, 1f);
 			}
