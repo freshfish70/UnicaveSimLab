@@ -59,12 +59,12 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DebugDraw: 1
-    - _DebugMag: 0.03
+    - _DebugMag: 0.06
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _FadeSizeNX: 0
     - _FadeSizeNY: 0
-    - _FadeSizePX: 0.08
+    - _FadeSizePX: 0.05
     - _FadeSizePY: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5

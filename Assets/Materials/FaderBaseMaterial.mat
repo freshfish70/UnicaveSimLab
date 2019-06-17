@@ -58,7 +58,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DebugDraw: 1
+    - _DebugDraw: 0
     - _DebugMag: 0.1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
