@@ -14,6 +14,8 @@
 
 
 using System;
+using System.Text;
+using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
@@ -146,21 +148,22 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     /// <param name="vertexIndex"></param>
     public void SetVisualMarkerVertextPoint(int vertexIndex)
     {
-        switch (vertexIndex)
-        {
-            case (int)VertexSelectedEnum.TOP_RIGHT:
-                this.SetVisualMarker(this.dewarpMeshPositions.upperRightPosition);
-                break;
-            case (int)VertexSelectedEnum.TOP_LEFT:
-                this.SetVisualMarker(this.dewarpMeshPositions.upperLeftPosition);
-                break;
-            case (int)VertexSelectedEnum.BOTTOM_LEFT:
-                this.SetVisualMarker(this.dewarpMeshPositions.lowerLeftPosition);
-                break;
-            case (int)VertexSelectedEnum.BOTTOM_RIGHT:
-                this.SetVisualMarker(this.dewarpMeshPositions.lowerRightPosition);
-                break;
-        }
+        this.SetVisualMarker(this.dewarpMeshPositions.verts[vertexIndex]);
+        // switch (vertexIndex)
+        // {
+        //     case (int)VertexSelectedEnum.TOP_RIGHT:
+        //         this.SetVisualMarker(this.dewarpMeshPositions.upperRightPosition);
+        //         break;
+        //     case (int)VertexSelectedEnum.TOP_LEFT:
+        //         this.SetVisualMarker(this.dewarpMeshPositions.upperLeftPosition);
+        //         break;
+        //     case (int)VertexSelectedEnum.BOTTOM_LEFT:
+        //         this.SetVisualMarker(this.dewarpMeshPositions.lowerLeftPosition);
+        //         break;
+        //     case (int)VertexSelectedEnum.BOTTOM_RIGHT:
+        //         this.SetVisualMarker(this.dewarpMeshPositions.lowerRightPosition);
+        //         break;
+        // }
     }
 
     /// <summary>
@@ -204,17 +207,23 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         {
             string content = File.ReadAllText(fullPath);
             string[] lines = content.Split('\n');
-            List<Vector2> vecs = new List<Vector2>();
+            List<Vector3> vecs = new List<Vector3>();
             foreach (string str in lines)
             {
-                string[] parts = str.Split(',');
-                vecs.Add(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
-                Debug.Log(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
+                string[] parts = str.Split('|');
+                if (parts.Length > 1)
+                {
+                    vecs.Add(new Vector3(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2])));
+                    Debug.Log(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
+                }
             }
-            this.dewarpMeshPositions.upperRightPosition = vecs[0];
-            this.dewarpMeshPositions.upperLeftPosition = vecs[1];
-            this.dewarpMeshPositions.lowerLeftPosition = vecs[2];
-            this.dewarpMeshPositions.lowerRightPosition = vecs[3];
+
+            for (int i = 0; i < vecs.Count; i++)
+            {
+                this.dewarpMeshPositions.verts[i] = vecs[i];
+            }
+
+            Debug.Log("LOADING WARP");
 #if UNITY_EDITOR
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
 #endif
@@ -233,15 +242,20 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     {
         string path = "configs/" + this.gameObject.name;
         Directory.CreateDirectory(path); // returns a DirectoryInfo object
-
-        File.WriteAllText($"./{path}/WARP-" + Util.ObjectFullName(this.gameObject) + ".conf",
-            this.dewarpMeshPositions.upperRightPosition.x + "," + this.dewarpMeshPositions.upperRightPosition.y + "\n" +
-            this.dewarpMeshPositions.upperLeftPosition.x + "," + this.dewarpMeshPositions.upperLeftPosition.y + "\n" +
-            this.dewarpMeshPositions.lowerLeftPosition.x + "," + this.dewarpMeshPositions.lowerLeftPosition.y + "\n" +
-            this.dewarpMeshPositions.lowerRightPosition.x + "," + this.dewarpMeshPositions.lowerRightPosition.y);
+        StringBuilder strBuilder = new StringBuilder();
+        foreach (var vert in this.dewarpMeshPositions.verts)
+        {
+            strBuilder.Append(vert.x + "|" + vert.y + "|" + vert.z + "\n");
+        }
+        // File.WriteAllText($"./{path}/WARP-" + Util.ObjectFullName(this.gameObject) + ".conf",
+        //     this.dewarpMeshPositions.upperRightPosition.x + "," + this.dewarpMeshPositions.upperRightPosition.y + "\n" +
+        //     this.dewarpMeshPositions.upperLeftPosition.x + "," + this.dewarpMeshPositions.upperLeftPosition.y + "\n" +
+        //     this.dewarpMeshPositions.lowerLeftPosition.x + "," + this.dewarpMeshPositions.lowerLeftPosition.y + "\n" +
+        //     this.dewarpMeshPositions.lowerRightPosition.x + "," + this.dewarpMeshPositions.lowerRightPosition.y);
+        File.WriteAllText($"./{path}/WARP-" + Util.ObjectFullName(this.gameObject) + ".conf", strBuilder.ToString());
 
         File.WriteAllText($"./{path}/POS-" + Util.ObjectFullName(this.gameObject) + ".conf",
-            transform.position.x + "," + transform.position.y + "," + transform.position.z);
+        transform.position.x + "," + transform.position.y + "," + transform.position.z);
 
 
         File.WriteAllText($"./{path}/ROT-" + Util.ObjectFullName(this.gameObject) + ".conf",
@@ -288,10 +302,12 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     {
         GameObject staticParent = new GameObject("Post Holder For: " + gameObject.name);
 
-        dewarpMeshPositions.upperRightPosition *= GetMultiplierFactor();
-        dewarpMeshPositions.upperLeftPosition *= GetMultiplierFactor();
-        dewarpMeshPositions.lowerRightPosition *= GetMultiplierFactor();
-        dewarpMeshPositions.lowerLeftPosition *= GetMultiplierFactor();
+        int length = this.dewarpMeshPositions.verts.Length;
+        Vector3[] verts = this.dewarpMeshPositions.verts;
+        for (int i = 0; i < length; i++)
+        {
+            verts[i] *= GetMultiplierFactor();
+        }
 
         bool stereo = true;
 
@@ -434,10 +450,16 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     {
         if (vertex != null)
         {
-            this.dewarpMeshPositions.upperRightPosition = new Vector3(vertex[0].x / this.displayRatio, vertex[0].y);
-            this.dewarpMeshPositions.upperLeftPosition = new Vector3(vertex[1].x / this.displayRatio, vertex[1].y);
-            this.dewarpMeshPositions.lowerLeftPosition = new Vector3(vertex[2].x / this.displayRatio, vertex[2].y);
-            this.dewarpMeshPositions.lowerRightPosition = new Vector3(vertex[3].x / this.displayRatio, vertex[3].y);
+            int i = 0;
+            foreach (var localVertex in vertex)
+            {
+                this.dewarpMeshPositions.verts[i] = new Vector3(localVertex.x / this.displayRatio, localVertex.y, localVertex.z);
+                i++;
+            }
+            // this.dewarpMeshPositions.upperRightPosition = new Vector3(vertex[0].x / this.displayRatio, vertex[0].y);
+            // this.dewarpMeshPositions.upperLeftPosition = new Vector3(vertex[1].x / this.displayRatio, vertex[1].y);
+            // this.dewarpMeshPositions.lowerLeftPosition = new Vector3(vertex[2].x / this.displayRatio, vertex[2].y);
+            // this.dewarpMeshPositions.lowerRightPosition = new Vector3(vertex[3].x / this.displayRatio, vertex[3].y);
             this.SaveWarpFile();
         }
 
