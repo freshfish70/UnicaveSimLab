@@ -14,6 +14,50 @@ public class Dewarp
     [Serializable]
     public class DewarpMeshPosition
     {
+        [Header("Mesh vertecies(Do not add extra verts)")]
+        public Vector3[] verts = {
+        		// 0 0 0 0 0 0 0 0 0
+        		// TOP RIGHT
+        		new Vector3(1.0f, 1.0f, 0.0f),
+        		// TOP CENTER
+        		new Vector3(0.0f, 1.0f, 0.0f),
+        		// TOP LEFT
+        		new Vector3(-1.0f, 1.0f, 0.0f),
+
+        		// 1 1 1 1 1 1 1 1 1
+        		// 1 LEFT
+        		new Vector3(-1.0f, 0.5f, 0.0f),
+        		// 1 CENTER
+        		new Vector3(0.0f, 0.5f, 0.0f),
+        		// 1 RIGHT
+        		new Vector3(1.0f, 0.5f, 0.0f),
+
+        		// 2 2 2 2 2 2 2 2 2 
+        		// 2 LEFT
+        		new Vector3(-1.0f, 0.0f, 0.0f),
+        		// 2 CENTER
+        		new Vector3(0.0f, 0.0f, 0.0f),
+        		// 2 RIGHT
+        		new Vector3(1.0f, 0.0f, 0.0f),
+
+        		// 3 3 3 3 3 3 3 3 3 3 
+        		// 3 LEFT
+        		new Vector3(-1.0f, -0.5f, 0.0f),
+        		// 3 CENTER
+        		new Vector3(0.0f, -0.5f, 0.0f),
+        		// 3 RIGHT
+        		new Vector3(1.0f, -0.5f, 0.0f),
+
+        		// 4 4 4 4 4 4 4 4 4 4 4 
+        		// 4 LEFT
+        		new Vector3(-1.0f, -1.0f, 0.0f),
+        		// 4 CENTER
+        		new Vector3(0.0f, -1.0f, 0.0f),
+        		// 4 RIGHT
+        		new Vector3(1.0f, -1.0f, 0.0f)
+
+
+        };
         /// <summary>
         /// Upper right corner position
         /// </summary>
@@ -122,27 +166,100 @@ public class Dewarp
     private Mesh CreateMesh()
     {
         this.warpMesh = new Mesh();
-        Vector2[] uvs = {
-                new Vector2(1.0f, 1.0f),
-                new Vector2(0.0f, 1.0f),
-                new Vector2(0.0f, 0.0f),
-                new Vector2(1.0f, 0.0f)
-            };
-        Vector3[] normals = {
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward
-            };
-        int[] triangles = {
-                0, 3, 2,
-                0, 2, 1
-            };
-        warpMesh.vertices = dewarpPositions.getAllPositions();
-        warpMesh.triangles = triangles;
-        warpMesh.uv = uvs;
-        warpMesh.normals = normals;
+        // Vector2[] uvs = {
+        //         new Vector2(1.0f, 1.0f),
+        //         new Vector2(0.0f, 1.0f),
+        //         new Vector2(0.0f, 0.0f),
+        //         new Vector2(1.0f, 0.0f)
+        //     };
+        // Vector3[] normals = {
+        //         -Vector3.forward,
+        //         -Vector3.forward,
+        //         -Vector3.forward,
+        //         -Vector3.forward
+        //     };
+        // int[] triangles = {
+        //         0, 3, 2,
+        //         0, 2, 1
+        //     };
 
+        // mesh.uv
+        int[] tri = {
+
+            0,4,1,
+            0,5,4,
+
+            1,3,2,
+            1,4,3,
+
+            5,7,4,
+            5,8,7,
+
+            4,6,3,
+            4,7,6,
+
+            8,10,7,
+            8,11,10,
+
+            7,9,6,
+            7,10,9,
+
+            11,13,10,
+            11,14,13,
+
+            10,12,9,
+            10,13,12,
+
+
+        };
+        Vector2[] uvs = {
+			// TOP
+        			// TOP RIGHT
+        			new Vector2(1.0f, 1.0f),
+        			// CENTER TOP
+        			new Vector2(0.5f, 1.0f),
+        			// TOP LEFT
+        			new Vector2(0.0f, 1.0f),
+
+
+        			// LEFT
+        			new Vector2(0.0f, 3/4f),
+        			// CENTER
+        			new Vector2(0.5f, 3/4f),
+        			// RIGHT
+        			new Vector2(1.0f, 3/4f),
+
+        			// LEFT
+        			new Vector2(0.0f, 2/4f),
+        			// CENTER
+        			new Vector2(0.5f, 2/4f),
+        			// RIGHT
+        			new Vector2(1.0f, 2/4f),
+
+        			// LEFT
+        			new Vector2(0.0f, 1/4f),
+        			// CENTER
+        			new Vector2(0.5f,  1/4f),
+        			// RIGHT
+        			new Vector2(1.0f,  1/4f),
+
+        			// LEFT
+        			new Vector2(0.0f, 0.0f),
+        			// CENTER
+        			new Vector2(0.5f, 0.0f),
+        			// RIGHT
+        			new Vector2(1.0f, 0.0f),
+
+
+                };
+
+
+        warpMesh.vertices = dewarpPositions.verts;
+        warpMesh.triangles = tri;
+        warpMesh.uv = uvs;
+        // warpMesh.normals = normals;
+        warpMesh.RecalculateNormals();
+        warpMesh.RecalculateTangents();
         return this.warpMesh;
     }
 
