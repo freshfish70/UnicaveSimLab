@@ -106,6 +106,8 @@ public class RealtimeCalibrator : NetworkBehaviour
             verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
             meshFilter.sharedMesh.vertices = verts;
             meshFilter.sharedMesh.UploadMeshData(false);
+            meshFilter.mesh.RecalculateBounds();
+            meshFilter.mesh.RecalculateTangents();
         }
 
         calibration.UpdateMeshPositions(lastWarpedFilter?.sharedMesh.vertices);
@@ -139,7 +141,7 @@ public class RealtimeCalibrator : NetworkBehaviour
     private void InfoDisplayShift(int selectedIndex)
     {
         PhysicalDisplayCalibration currentDisplay = this.allOptions[selectedIndex].calibration;
-        if (currentDisplay == null || this.infoDisplay == null) return;
+        if (currentDisplay == null || this.infoDisplayInstance == null) return;
 
         if (currentDisplay.GetDisplayWarpsValues().Count() > 0)
         {
@@ -237,7 +239,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            this.vertexIndex = (vertexIndex + 1) % 4;
+            this.vertexIndex = (vertexIndex + 1) % 15;
             if (!noOptions)
             {
                 this.VertexShift(direction, 1f);
@@ -287,7 +289,7 @@ public class RealtimeCalibrator : NetworkBehaviour
         }
         else if (Input.GetKey(KeyCode.UpArrow))
         {
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
                 direction.z = 1;
             }
@@ -304,7 +306,7 @@ public class RealtimeCalibrator : NetworkBehaviour
         }
         else if (Input.GetKey(KeyCode.DownArrow))
         {
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
                 direction.z = -1;
             }
@@ -323,13 +325,13 @@ public class RealtimeCalibrator : NetworkBehaviour
                 switch (this.calibrationType)
                 {
                     case CalibrationType.POSITION:
-                        this.PositionShift(direction, 0.001f);
+                        this.PositionShift(direction, 0.003f);
                         break;
                     case CalibrationType.ROTATION:
                         this.RotationShift(direction, 0.15f);
                         break;
                     case CalibrationType.VERTEX:
-                        VertexShift(direction, 0.005f);
+                        this.VertexShift(direction, 0.003f);
                         break;
                 }
 
