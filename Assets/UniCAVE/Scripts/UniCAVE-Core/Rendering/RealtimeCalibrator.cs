@@ -266,8 +266,6 @@ public class RealtimeCalibrator : NetworkBehaviour
                     VertexShift(direction, 1f);
                 }
             }
-
-
         }
         else if (Input.GetKeyDown(KeyCode.Return))
         {
@@ -289,7 +287,7 @@ public class RealtimeCalibrator : NetworkBehaviour
         }
         else if (Input.GetKey(KeyCode.UpArrow))
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftControl))
             {
                 direction.z = 1;
             }
@@ -306,7 +304,7 @@ public class RealtimeCalibrator : NetworkBehaviour
         }
         else if (Input.GetKey(KeyCode.DownArrow))
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftControl))
             {
                 direction.z = -1;
             }

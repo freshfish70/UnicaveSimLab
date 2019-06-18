@@ -202,6 +202,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     {
         string path = "configs/" + this.gameObject.name;
         string fullPath = $"./{path}/WARP-" + Util.ObjectFullName(gameObject) + ".conf";
+#if UNITY_EDITOR
         Debug.Log("Loading warp file \"" + fullPath + "\"");
         if (File.Exists(fullPath))
         {
@@ -213,25 +214,57 @@ public class PhysicalDisplayCalibration : MonoBehaviour
                 string[] parts = str.Split('|');
                 if (parts.Length > 1)
                 {
-                    vecs.Add(new Vector3(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2])));
+                    vecs.Add(new Vector3(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.'))));
                     Debug.Log(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
                 }
             }
-
             for (int i = 0; i < vecs.Count; i++)
             {
                 this.dewarpMeshPositions.verts[i] = vecs[i];
             }
-
-            Debug.Log("LOADING WARP");
-#if UNITY_EDITOR
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
 #endif
-        }
-        else
+
+#if !UNITY_EDITOR
+        fullPath = $"./{path}/POS-" + Util.ObjectFullName(gameObject) + ".conf";
+        Debug.Log("Loading POS file \"" + fullPath + "\"");
+        if (File.Exists(fullPath))
         {
-            Debug.Log("Warp file does not exist...");
+            string content = File.ReadAllText(fullPath);
+
+            string[] parts = content.Split('|');
+            Debug.Log(parts);
+            if (parts.Length > 1)
+            {
+                this.transform.position = new Vector3(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')));
+            }
+
         }
+
+        fullPath = $"./{path}/ROT-" + Util.ObjectFullName(gameObject) + ".conf";
+        Debug.Log("Loading ROT file \"" + fullPath + "\"");
+        if (File.Exists(fullPath))
+        {
+            string content = File.ReadAllText(fullPath);
+
+            string[] parts = content.Split('|');
+            if (parts.Length > 1)
+            {
+                this.transform.rotation = new Quaternion(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')), 0);
+            }
+
+        }
+#endif
+
+        Debug.Log("LOADING WARP");
+#if UNITY_EDITOR
+        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+#endif
+
+        // else
+        // {
+        //     Debug.Log("Warp file does not exist...");
+        // }
     }
 
     /// <summary>
@@ -255,11 +288,11 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         File.WriteAllText($"./{path}/WARP-" + Util.ObjectFullName(this.gameObject) + ".conf", strBuilder.ToString());
 
         File.WriteAllText($"./{path}/POS-" + Util.ObjectFullName(this.gameObject) + ".conf",
-        transform.position.x + "," + transform.position.y + "," + transform.position.z);
+        this.transform.localPosition.x + "|" + this.transform.localPosition.y + "|" + this.transform.localPosition.z);
 
 
         File.WriteAllText($"./{path}/ROT-" + Util.ObjectFullName(this.gameObject) + ".conf",
-            transform.rotation.x + "," + transform.rotation.y + "," + transform.rotation.z);
+            transform.localRotation.x + "|" + transform.localRotation.y + "|" + transform.localRotation.z);
     }
 
     public void MoveDisplay(Vector3 pos)
@@ -368,7 +401,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
             postCams.Add(postCam);
         }
         globalPostOffset = globalPostOffset + new Vector3(10, 10, 10);
-
     }
 
     /// <summary>
