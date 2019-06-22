@@ -453,16 +453,52 @@ public class VertexText : MonoBehaviour
 		int endRow = (indexRow + selectGridSize) <= sizeX ? (indexRow - selectGridSize) : sizeX;
 
 		int startIndex = startRow * indexSizeX;
-		int endIndex = startRow * indexSizeX;
+		int endIndex = endRow * indexSizeX;
+
+		int currentVertIndex = startIndex;
 
 		// Vertecies to move
-		List<int> vertsToShift = new List<int>();
+		Dictionary<int, float> vertsToShift = new Dictionary<int, float>();
 
 		int currentRow = 0;
 
+		float moveFactor = (float)selectGridSize / (float)((selectGridSize * 2) + 1);
+
+		float currentMoveFactor = moveFactor;
+
 		for (int row = startRow; row <= endRow; row++)
 		{
+			int start;
 
+			if (row == indexRow)
+			{
+				start = index - (indexSizeX * 2);
+			}
+			else if (row > indexRow)
+			{
+				start = index + (indexSizeX * row) + ();
+			}
+			else if (row < indexRow)
+			{
+				if (row == 0)
+				{
+					int wer = indexRow;
+					start = index - (indexSizeX * row);
+				}
+				else
+				{
+					start = index - (indexSizeX * row);
+				}
+			}
+
+
+
+
+			// for (int rowIndex = 0; rowIndex <= (selectGridSize * 2) + 1; rowIndex++)
+			// {
+
+			// }
+			// vertsToShift.Add(startIndex);
 		}
 
 
@@ -471,42 +507,42 @@ public class VertexText : MonoBehaviour
 			currentRow = (int)Mathf.Floor(i / (sizeX + 1));
 
 
-			if (indexRow - 1 == currentRow)
-			{
-				int negativeSelector = index - sizeX;
-				if (negativeSelector == i) vertsToShift.Add(i);
-				for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
-				{
-					if (negativeSelector - gridIndex == i) vertsToShift.Add(i);
-				}
-			}
-			if (indexRow + 1 == currentRow)
-			{
-				int positiveSelector = index + sizeX;
-				if (positiveSelector == i) vertsToShift.Add(i);
-				for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
-				{
-					if (positiveSelector + gridIndex == i) vertsToShift.Add(i);
-				}
-			}
-			if (indexRow == currentRow)
-			{
-				for (int gridIndex = 1; gridIndex < selectGridSize; gridIndex++)
-				{
-					if (index - gridIndex == i) vertsToShift.Add(i);
-					if (index + gridIndex == i) vertsToShift.Add(i);
-				}
+			// if (indexRow - 1 == currentRow)
+			// {
+			// 	int negativeSelector = index - sizeX;
+			// 	if (negativeSelector == i) vertsToShift.Add(i);
+			// 	for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
+			// 	{
+			// 		if (negativeSelector - gridIndex == i) vertsToShift.Add(i);
+			// 	}
+			// }
+			// if (indexRow + 1 == currentRow)
+			// {
+			// 	int positiveSelector = index + sizeX;
+			// 	if (positiveSelector == i) vertsToShift.Add(i);
+			// 	for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
+			// 	{
+			// 		if (positiveSelector + gridIndex == i) vertsToShift.Add(i);
+			// 	}
+			// }
+			// if (indexRow == currentRow)
+			// {
+			// 	for (int gridIndex = 1; gridIndex < selectGridSize; gridIndex++)
+			// 	{
+			// 		if (index - gridIndex == i) vertsToShift.Add(i);
+			// 		if (index + gridIndex == i) vertsToShift.Add(i);
+			// 	}
 
-			}
+			// }
 		}
 
-		Vector3[] vertices = this.filter.sharedMesh.vertices;
-		foreach (var ind in vertsToShift)
-		{
-			Vector3 e = new Vector3(vertices[ind].x, vertices[ind].y, vertices[ind].z);
-			vertices[ind] = e += dir;
-		}
-		this.filter.sharedMesh.vertices = vertices;
+		// Vector3[] vertices = this.filter.sharedMesh.vertices;
+		// foreach (var ind in vertsToShift)
+		// {
+		// 	Vector3 e = new Vector3(vertices[ind].x, vertices[ind].y, vertices[ind].z);
+		// 	vertices[ind] = e += dir;
+		// }
+		// this.filter.sharedMesh.vertices = vertices;
 
 	}
 }
