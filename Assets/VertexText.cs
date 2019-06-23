@@ -328,7 +328,7 @@ public class VertexText : MonoBehaviour
 	}
 
 	private int vertexIndex = 0;
-	private float delta = 0.005f;
+	private float delta = 0.001f;
 
 	void Update()
 	{
@@ -339,7 +339,7 @@ public class VertexText : MonoBehaviour
 			this.filter.sharedMesh.vertices = verts;
 			this.filter.sharedMesh.UploadMeshData(false);
 			this.vertices = this.filter.sharedMesh.vertices;
-			this.moveVerts(vertexIndex, new Vector3(0, 1 * delta / 2, 0));
+			this.moveVerts2(vertexIndex, new Vector3(0, 1 * delta / 2, 0));
 		}
 		if (Input.GetKey(KeyCode.O))
 		{
@@ -348,7 +348,7 @@ public class VertexText : MonoBehaviour
 			this.filter.sharedMesh.vertices = verts;
 			this.filter.sharedMesh.UploadMeshData(false);
 			this.vertices = this.filter.sharedMesh.vertices;
-			this.moveVerts(vertexIndex, new Vector3(0, -1 * delta / 2, 0));
+			this.moveVerts2(vertexIndex, new Vector3(0, -1 * delta / 2, 0));
 
 
 		}
@@ -391,159 +391,81 @@ public class VertexText : MonoBehaviour
 
 	}
 
-	public void moveVerts(int index, Vector3 dir)
-	{
-
-		int xmax = this.xSize;
-		int ymax = this.ySize;
-
-		int row = (index / (xmax + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (xmax + 1));
-
-		List<int> vertsToShift = new List<int>();
-		for (int i = 0; i < this.vertices.Length; i++)
-		{
-			if (row - 1 == (int)Mathf.Floor(i / (xmax + 1)))
-			{
-				int negativeSelector = index - xmax;
-				if (negativeSelector == i) vertsToShift.Add(i);
-				if (negativeSelector - 1 == i) vertsToShift.Add(i);
-				if (negativeSelector - 2 == i) vertsToShift.Add(i);
-			}
-			if (row + 1 == (int)Mathf.Floor(i / (xmax + 1)))
-			{
-				int positiveSelector = index + xmax;
-				if (positiveSelector == i) vertsToShift.Add(i);
-				if (positiveSelector + 1 == i) vertsToShift.Add(i);
-				if (positiveSelector + 2 == i) vertsToShift.Add(i);
-			}
-			if (row == (int)Mathf.Floor(i / (xmax + 1)))
-			{
-				if (index - 1 == i) vertsToShift.Add(i);
-				if (index + 1 == i) vertsToShift.Add(i);
-			}
-		}
-
-		Vector3[] vertices = this.filter.sharedMesh.vertices;
-		foreach (var ind in vertsToShift)
-		{
-			Vector3 e = new Vector3(vertices[ind].x, vertices[ind].y, vertices[ind].z);
-			vertices[ind] = e += dir;
-		}
-		this.filter.sharedMesh.vertices = vertices;
-
-	}
-
 	public void moveVerts2(int index, Vector3 dir)
 	{
 
 		int sizeX = this.xSize;
-		int ymax = this.ySize;
 
 		int indexSizeX = this.xSize + 1;
-
-
 
 		// The row the selected index is on
 		int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (sizeX + 1));
 
 		// The size of the select grid
-		int selectGridSize = 2;
+		int selectGridSize = 3;
 
 		int startRow = (indexRow - selectGridSize) >= 0 ? (indexRow - selectGridSize) : 0;
-		int endRow = (indexRow + selectGridSize) <= sizeX ? (indexRow - selectGridSize) : sizeX;
-
-		int startIndex = startRow * indexSizeX;
-		int endIndex = endRow * indexSizeX;
-
-		int currentVertIndex = startIndex;
+		int endRow = (indexRow + selectGridSize) <= sizeX ? (indexRow + selectGridSize) : sizeX;
 
 		// Vertecies to move
 		Dictionary<int, float> vertsToShift = new Dictionary<int, float>();
 
-		int currentRow = 0;
-
-		float moveFactor = (float)selectGridSize / (float)((selectGridSize * 2) + 1);
-
+		float moveFactor = (float)selectGridSize / (float)((selectGridSize * 2));
 		float currentMoveFactor = moveFactor;
 
 		for (int row = startRow; row <= endRow; row++)
 		{
-			int start;
+			int rowDiff = indexRow - row;
 
-			if (row == indexRow)
+			int startIndexForRow = 0;
+			int stopIndexForRow = 0;
+			int midIndexForRow = 0;
+
+			int minSize = row * indexSizeX;
+			int maxSize = minSize + sizeX;
+
+			startIndexForRow = index - (indexSizeX * (rowDiff)) - selectGridSize;
+			startIndexForRow = (startIndexForRow < minSize) ? minSize : startIndexForRow;
+
+			midIndexForRow = index - (indexSizeX * (rowDiff));
+
+			stopIndexForRow = index - (indexSizeX * (rowDiff)) + selectGridSize;
+			stopIndexForRow = (stopIndexForRow > maxSize) ? maxSize : stopIndexForRow;
+
+			int factor = 2;
+			for (int i = midIndexForRow + 1; i <= stopIndexForRow; i++)
 			{
-				start = index - (indexSizeX * 2);
+				vertsToShift.Add(i, moveFactor / factor);
+				factor++;
 			}
-			else if (row > indexRow)
+			factor = 2;
+			for (int i = midIndexForRow - 1; i >= startIndexForRow; i--)
 			{
-				start = index + (indexSizeX * row) + ();
+				vertsToShift.Add(i, moveFactor / factor);
+				factor++;
 			}
-			else if (row < indexRow)
+
+			if (midIndexForRow == index)
 			{
-				if (row == 0)
-				{
-					int wer = indexRow;
-					start = index - (indexSizeX * row);
-				}
-				else
-				{
-					start = index - (indexSizeX * row);
-				}
+				vertsToShift.Add(midIndexForRow, 1);
+			}
+			else
+			{
+				vertsToShift.Add(midIndexForRow, moveFactor);
 			}
 
-
-
-
-			// for (int rowIndex = 0; rowIndex <= (selectGridSize * 2) + 1; rowIndex++)
-			// {
-
-			// }
-			// vertsToShift.Add(startIndex);
 		}
 
-
-		for (int i = startIndex; i < this.vertices.Length; i++)
+		Vector3[] vertices = this.filter.sharedMesh.vertices;
+		foreach (var ind in vertsToShift)
 		{
-			currentRow = (int)Mathf.Floor(i / (sizeX + 1));
-
-
-			// if (indexRow - 1 == currentRow)
-			// {
-			// 	int negativeSelector = index - sizeX;
-			// 	if (negativeSelector == i) vertsToShift.Add(i);
-			// 	for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
-			// 	{
-			// 		if (negativeSelector - gridIndex == i) vertsToShift.Add(i);
-			// 	}
-			// }
-			// if (indexRow + 1 == currentRow)
-			// {
-			// 	int positiveSelector = index + sizeX;
-			// 	if (positiveSelector == i) vertsToShift.Add(i);
-			// 	for (int gridIndex = 0; gridIndex < selectGridSize; gridIndex++)
-			// 	{
-			// 		if (positiveSelector + gridIndex == i) vertsToShift.Add(i);
-			// 	}
-			// }
-			// if (indexRow == currentRow)
-			// {
-			// 	for (int gridIndex = 1; gridIndex < selectGridSize; gridIndex++)
-			// 	{
-			// 		if (index - gridIndex == i) vertsToShift.Add(i);
-			// 		if (index + gridIndex == i) vertsToShift.Add(i);
-			// 	}
-
-			// }
+			Vector3 e = new Vector3(vertices[ind.Key].x, vertices[ind.Key].y, vertices[ind.Key].z);
+			vertices[ind.Key] = e += dir * ind.Value;
 		}
-
-		// Vector3[] vertices = this.filter.sharedMesh.vertices;
-		// foreach (var ind in vertsToShift)
-		// {
-		// 	Vector3 e = new Vector3(vertices[ind].x, vertices[ind].y, vertices[ind].z);
-		// 	vertices[ind] = e += dir;
-		// }
-		// this.filter.sharedMesh.vertices = vertices;
+		this.filter.sharedMesh.vertices = vertices;
 
 	}
+
+
 }
 
