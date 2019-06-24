@@ -48,7 +48,7 @@ MonoBehaviour:
   m_NetworkPort: 7777
   m_ServerBindToIP: 0
   m_ServerBindAddress: 
-  m_NetworkAddress: 158.38.65.36
+  m_NetworkAddress: 158.38.65.37
   m_DontDestroyOnLoad: 1
   m_RunInBackground: 1
   m_ScriptCRCCheck: 1
@@ -128,8 +128,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkManager: {fileID: 3612706251938588736}
-  headMachine: HVL-IG01
-  serverAddress: 158.38.65.36
+  headMachine: HVL-IG02
+  serverAddress: 158.38.65.37
   serverPort: 7568
 --- !u!114 &3200545706368471417
 MonoBehaviour:

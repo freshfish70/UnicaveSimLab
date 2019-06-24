@@ -40,6 +40,8 @@ public class RealtimeCalibrator : NetworkBehaviour
     /// </summary>
     private InfoDisplay infoDisplayInstance;
 
+    private int gridSelectSize = 1;
+
     void Start()
     {
         allOptions = new List<CalibrationSelection>();
@@ -133,16 +135,13 @@ public class RealtimeCalibrator : NetworkBehaviour
         // The row the selected index is on
         int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (sizeX + 1));
 
-        // The size of the select grid
-        int selectGridSize = 3;
-
-        int startRow = (indexRow - selectGridSize) >= 0 ? (indexRow - selectGridSize) : 0;
-        int endRow = (indexRow + selectGridSize) <= sizeX ? (indexRow + selectGridSize) : sizeX;
+        int startRow = (indexRow - this.gridSelectSize) >= 0 ? (indexRow - this.gridSelectSize) : 0;
+        int endRow = (indexRow + this.gridSelectSize) <= sizeX ? (indexRow + this.gridSelectSize) : sizeX;
 
         // Vertecies to move
         Dictionary<int, float> vertsToShift = new Dictionary<int, float>();
 
-        float moveFactor = (float)selectGridSize / (float)((selectGridSize * 2));
+        float moveFactor = (float)this.gridSelectSize / (float)((this.gridSelectSize * 2));
         float currentMoveFactor = moveFactor;
 
         for (int row = startRow; row <= endRow; row++)
@@ -156,12 +155,12 @@ public class RealtimeCalibrator : NetworkBehaviour
             int minSize = row * indexSizeX;
             int maxSize = minSize + sizeX;
 
-            startIndexForRow = index - (indexSizeX * (rowDiff)) - selectGridSize;
+            startIndexForRow = index - (indexSizeX * (rowDiff)) - this.gridSelectSize;
             startIndexForRow = (startIndexForRow < minSize) ? minSize : startIndexForRow;
 
             midIndexForRow = index - (indexSizeX * (rowDiff));
 
-            stopIndexForRow = index - (indexSizeX * (rowDiff)) + selectGridSize;
+            stopIndexForRow = index - (indexSizeX * (rowDiff)) + this.gridSelectSize;
             stopIndexForRow = (stopIndexForRow > maxSize) ? maxSize : stopIndexForRow;
 
             int factor = 2;
@@ -279,10 +278,41 @@ public class RealtimeCalibrator : NetworkBehaviour
         this.InfoDisplayShift(selectedIndex);
     }
 
+    /// <summary>
+    /// Increase / decrease grid select size.
+    /// Will not go under 1.
+    /// </summary>
+    /// <param name="increase">true to increase false to decrease</param>
+    [ClientRpc]
+    void RpcAdjustGridSelectSize(bool increase)
+    {
+        LocalAdjustGridSelectSize(increase);
+    }
+
+    private void LocalAdjustGridSelectSize(bool increase)
+    {
+        if (increase)
+        {
+            this.gridSelectSize++;
+        }
+        else
+        {
+            this.gridSelectSize = (this.gridSelectSize--) <= 0 ? 0 : this.gridSelectSize--;
+        }
+    }
+
+    private void AdjustGridSelectSize(bool increase)
+    {
+        this.LocalAdjustGridSelectSize(increase);
+        this.RpcAdjustGridSelectSize(increase);
+    }
+
+
     private void VertexShift(Vector2 direction, float delta)
     {
         LocalShift(direction, delta, selectedIndex, vertexIndex);
         RpcShift(direction, delta, selectedIndex, vertexIndex);
+        Debug.Log(this.gridSelectSize);
     }
 
     private void PositionShift(Vector3 direction, float delta)
@@ -321,21 +351,21 @@ public class RealtimeCalibrator : NetworkBehaviour
             this.CycleNextCalibrationType();
         }
 
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            this.AdjustGridSelectSize(true);
+        }
+
+        if (Input.GetKeyDown(KeyCode.KeypadMinus))
+        {
+            this.AdjustGridSelectSize(false);
+        }
+
         Vector3 direction = Vector3.zero;
         bool anyPressed = false;
         bool noOptions = allOptions.Count == 0;
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            this.vertexIndex = (vertexIndex + 1) % 225;
-            if (!noOptions)
-            {
-                this.VertexShift(direction, 1f);
-            }
-        }
-
-
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             if (Input.GetKeyDown(KeyCode.Return))
             {
@@ -354,6 +384,8 @@ public class RealtimeCalibrator : NetworkBehaviour
                     VertexShift(direction, 1f);
                 }
             }
+
+
         }
         else if (Input.GetKeyDown(KeyCode.Return))
         {
@@ -362,6 +394,27 @@ public class RealtimeCalibrator : NetworkBehaviour
             {
                 DisplayShift();
                 VertexShift(direction, 1f);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            this.vertexIndex = (vertexIndex + 1) % 63;
+            if (!noOptions)
+            {
+                this.VertexShift(direction, 1f);
+            }
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                this.vertexIndex = (vertexIndex--) < 0 ? 63 : vertexIndex--;
+                if (!noOptions)
+                {
+                    this.VertexShift(direction, 1f);
+                }
             }
         }
 
@@ -411,7 +464,6 @@ public class RealtimeCalibrator : NetworkBehaviour
             Debug.Log("RealtimeCalibration: isServer = " + isServer);
             if (isServer)
             {
-                Debug.Log(direction);
                 switch (this.calibrationType)
                 {
                     case CalibrationType.POSITION:

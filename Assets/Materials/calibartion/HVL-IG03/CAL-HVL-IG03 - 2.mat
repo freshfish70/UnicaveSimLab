@@ -63,8 +63,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _FadeSizeNX: 0.08
-    - _FadeSizeNY: 0
-    - _FadeSizePX: 0.08
+    - _FadeSizeNY: 0.045
+    - _FadeSizePX: 0.045
     - _FadeSizePY: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5

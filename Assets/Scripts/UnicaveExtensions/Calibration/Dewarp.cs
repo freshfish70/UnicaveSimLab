@@ -112,8 +112,8 @@ public class Dewarp
 
     };
 
-    public readonly int xSize = 10;
-    public readonly int ySize = 10;
+    public readonly int xSize = 7;
+    public readonly int ySize = 7;
 
     /// <summary>
     /// The game object name for the dewarp mesh
@@ -305,10 +305,8 @@ public class Dewarp
 
         for (int i = 0, y = 0; y <= ySize; y++)
         {
-            lastY += (decimal)ymodifier;
             for (int x = 0; x <= xSize; x++, i++)
             {
-                lastX += (decimal)xmodifier;
                 if (this.dewarpPositions.verts.Length == this.dewarpPositions.generatedVerts.Length)
                 {
                     this.dewarpPositions.generatedVerts[i] = new Vector3((float)this.dewarpPositions.verts[i].x, (float)this.dewarpPositions.verts[i].y);
@@ -319,8 +317,10 @@ public class Dewarp
                 }
                 uv[i] = new Vector2((float)x / xSize, (float)y / ySize);
                 tangents[i] = tangent;
-                // yield return wait;
+                lastX += (decimal)xmodifier;
+
             }
+            lastY += (decimal)ymodifier;
             lastX = -1;
         }
 
@@ -341,10 +341,8 @@ public class Dewarp
         this.warpMesh.tangents = tangents;
         this.warpMesh.RecalculateNormals();
         this.warpMesh.RecalculateTangents();
-        Debug.Log(this.dewarpPositions.verts);
-        if (this.dewarpPositions.verts.Length < 16)
+        if (this.dewarpPositions.verts.Length == 0)
         {
-            // this.dewarpPositions.verts = new Vector3[(xSize + 1) * (ySize + 1)];
             this.dewarpPositions.verts = this.dewarpPositions.generatedVerts;
         }
 

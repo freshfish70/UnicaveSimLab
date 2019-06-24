@@ -58,13 +58,13 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DebugDraw: 1
+    - _DebugDraw: 0
     - _DebugMag: 0.06
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FadeSizeNX: 0
+    - _FadeSizeNX: 0.1
     - _FadeSizeNY: 0
-    - _FadeSizePX: 0.05
+    - _FadeSizePX: 0.1
     - _FadeSizePY: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
