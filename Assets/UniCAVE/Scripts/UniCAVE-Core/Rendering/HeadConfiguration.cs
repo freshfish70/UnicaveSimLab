@@ -24,7 +24,8 @@ using UnityEditor;
 #endif
 
 [Serializable]
-public class HeadConfiguration : MonoBehaviour {
+public class HeadConfiguration : MonoBehaviour
+{
 
     public static HeadConfiguration globalHead = null;
 
@@ -33,9 +34,10 @@ public class HeadConfiguration : MonoBehaviour {
     public Vector3 rightEyeOffset;
 
     public float nearClippingPlane = 0.01f, farClippingPlane = 100.0f;
-    
+
     //creates an eye as a child and sets its properties
-    public Camera CreateLeftEye(string name) {
+    public Camera CreateLeftEye(string name)
+    {
         GameObject obj = new GameObject("Left Eye For: " + name);
         Camera res = obj.AddComponent<Camera>();
         res.nearClipPlane = nearClippingPlane;
@@ -43,7 +45,8 @@ public class HeadConfiguration : MonoBehaviour {
         res.transform.localPosition = leftEyeOffset;
         return res;
     }
-    public Camera CreateCenterEye(string name) {
+    public Camera CreateCenterEye(string name)
+    {
         GameObject obj = new GameObject("Center Eye For: " + name);
         Camera res = obj.AddComponent<Camera>();
         res.nearClipPlane = nearClippingPlane;
@@ -51,7 +54,8 @@ public class HeadConfiguration : MonoBehaviour {
         res.transform.localPosition = centerEyeOffset;
         return res;
     }
-    public Camera CreateRightEye(string name) {
+    public Camera CreateRightEye(string name)
+    {
         GameObject obj = new GameObject("Right Eye For: " + name);
         Camera res = obj.AddComponent<Camera>();
         res.nearClipPlane = nearClippingPlane;
@@ -60,17 +64,19 @@ public class HeadConfiguration : MonoBehaviour {
         return res;
     }
 
-    public void Start() {
+    public void Start()
+    {
         globalHead = this;
     }
 
 #if UNITY_EDITOR
 
-    private void OnDrawGizmos() {
+    private void OnDrawGizmos()
+    {
         Gizmos.DrawWireSphere(transform.localToWorldMatrix * new Vector4(leftEyeOffset.x, leftEyeOffset.y, leftEyeOffset.z, 1.0f), 0.01f);
         Gizmos.DrawWireSphere(transform.localToWorldMatrix * new Vector4(centerEyeOffset.x, centerEyeOffset.y, centerEyeOffset.z, 1.0f), 0.01f);
         Gizmos.DrawWireSphere(transform.localToWorldMatrix * new Vector4(rightEyeOffset.x, rightEyeOffset.y, rightEyeOffset.z, 1.0f), 0.01f);
         Gizmos.DrawWireSphere(transform.position, Mathf.Max(leftEyeOffset.magnitude, rightEyeOffset.magnitude) + 0.02f);
     }
-    #endif
+#endif
 }

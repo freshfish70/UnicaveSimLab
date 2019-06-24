@@ -15,49 +15,53 @@ public class Dewarp
     public class DewarpMeshPosition
     {
         [Header("Mesh vertecies(Do not add extra verts)")]
-        public Vector3[] verts = {
-        		// 0 0 0 0 0 0 0 0 0
-        		// TOP RIGHT
-        		new Vector3(1.0f, 1.0f, 0.0f),
-        		// TOP CENTER
-        		new Vector3(0.0f, 1.0f, 0.0f),
-        		// TOP LEFT
-        		new Vector3(-1.0f, 1.0f, 0.0f),
+        public Vector3[] verts;
+        // {
+        // 		// 0 0 0 0 0 0 0 0 0
+        // 		// TOP RIGHT
+        // 		new Vector3(1.0f, 1.0f, 0.0f),
+        // 		// TOP CENTER
+        // 		new Vector3(0.0f, 1.0f, 0.0f),
+        // 		// TOP LEFT
+        // 		new Vector3(-1.0f, 1.0f, 0.0f),
 
-        		// 1 1 1 1 1 1 1 1 1
-        		// 1 LEFT
-        		new Vector3(-1.0f, 0.5f, 0.0f),
-        		// 1 CENTER
-        		new Vector3(0.0f, 0.5f, 0.0f),
-        		// 1 RIGHT
-        		new Vector3(1.0f, 0.5f, 0.0f),
+        // 		// 1 1 1 1 1 1 1 1 1
+        // 		// 1 LEFT
+        // 		new Vector3(-1.0f, 0.5f, 0.0f),
+        // 		// 1 CENTER
+        // 		new Vector3(0.0f, 0.5f, 0.0f),
+        // 		// 1 RIGHT
+        // 		new Vector3(1.0f, 0.5f, 0.0f),
 
-        		// 2 2 2 2 2 2 2 2 2 
-        		// 2 LEFT
-        		new Vector3(-1.0f, 0.0f, 0.0f),
-        		// 2 CENTER
-        		new Vector3(0.0f, 0.0f, 0.0f),
-        		// 2 RIGHT
-        		new Vector3(1.0f, 0.0f, 0.0f),
+        // 		// 2 2 2 2 2 2 2 2 2 
+        // 		// 2 LEFT
+        // 		new Vector3(-1.0f, 0.0f, 0.0f),
+        // 		// 2 CENTER
+        // 		new Vector3(0.0f, 0.0f, 0.0f),
+        // 		// 2 RIGHT
+        // 		new Vector3(1.0f, 0.0f, 0.0f),
 
-        		// 3 3 3 3 3 3 3 3 3 3 
-        		// 3 LEFT
-        		new Vector3(-1.0f, -0.5f, 0.0f),
-        		// 3 CENTER
-        		new Vector3(0.0f, -0.5f, 0.0f),
-        		// 3 RIGHT
-        		new Vector3(1.0f, -0.5f, 0.0f),
+        // 		// 3 3 3 3 3 3 3 3 3 3 
+        // 		// 3 LEFT
+        // 		new Vector3(-1.0f, -0.5f, 0.0f),
+        // 		// 3 CENTER
+        // 		new Vector3(0.0f, -0.5f, 0.0f),
+        // 		// 3 RIGHT
+        // 		new Vector3(1.0f, -0.5f, 0.0f),
 
-        		// 4 4 4 4 4 4 4 4 4 4 4 
-        		// 4 LEFT
-        		new Vector3(-1.0f, -1.0f, 0.0f),
-        		// 4 CENTER
-        		new Vector3(0.0f, -1.0f, 0.0f),
-        		// 4 RIGHT
-        		new Vector3(1.0f, -1.0f, 0.0f)
+        // 		// 4 4 4 4 4 4 4 4 4 4 4 
+        // 		// 4 LEFT
+        // 		new Vector3(-1.0f, -1.0f, 0.0f),
+        // 		// 4 CENTER
+        // 		new Vector3(0.0f, -1.0f, 0.0f),
+        // 		// 4 RIGHT
+        // 		new Vector3(1.0f, -1.0f, 0.0f)
 
 
-        };
+        // };
+
+        public Vector3[] generatedVerts;
+
         /// <summary>
         /// Upper right corner position
         /// </summary>
@@ -108,6 +112,9 @@ public class Dewarp
 
     };
 
+    public readonly int xSize = 10;
+    public readonly int ySize = 10;
+
     /// <summary>
     /// The game object name for the dewarp mesh
     /// </summary>
@@ -147,7 +154,7 @@ public class Dewarp
 
         this.warpMeshFilter = dewarpObject.AddComponent<MeshFilter>();
 
-        this.warpMeshFilter.mesh = CreateMesh();
+        this.warpMeshFilter.mesh = Generate();
         dewarpObject.layer = 8; //post processing layer is 8
 
         //create material for left warpMesh
@@ -157,6 +164,7 @@ public class Dewarp
         //assign the render texture to the material and the material to the warpMesh
         renderMaterial.mainTexture = cameraTexture;
         dewarpObject.AddComponent<MeshRenderer>().material = renderMaterial;
+
     }
 
     /// <summary>
@@ -185,6 +193,18 @@ public class Dewarp
 
         // mesh.uv
         int[] tri = {
+
+            // 0,2,1,
+            // 0,3,2,
+
+            // 3,4,2,
+            // 3,5,4,
+
+            // 5,6,4,
+            // 5,7,6,
+
+            // 7,8,6,
+            // 7,9,8,
 
             0,4,1,
             0,5,4,
@@ -254,13 +274,84 @@ public class Dewarp
                 };
 
 
-        warpMesh.vertices = dewarpPositions.verts;
+        // warpMesh.vertices = dewarpPositions.verts;
         warpMesh.triangles = tri;
         warpMesh.uv = uvs;
         // warpMesh.normals = normals;
         warpMesh.RecalculateNormals();
         warpMesh.RecalculateTangents();
         return this.warpMesh;
+    }
+
+    private Mesh Generate()
+    {
+        // WaitForSeconds wait = new WaitForSeconds(0.01f);
+        this.warpMesh = new Mesh();
+        this.warpMesh.name = "Warp grid";
+
+        this.dewarpPositions.generatedVerts = new Vector3[(xSize + 1) * (ySize + 1)];
+        Vector2[] uv = new Vector2[this.dewarpPositions.generatedVerts.Length];
+        Vector4[] tangents = new Vector4[this.dewarpPositions.generatedVerts.Length];
+        Vector4 tangent = new Vector4(1f, 0f, 0f, -1f);
+
+        decimal xx = xSize;
+        decimal yy = ySize;
+
+        decimal ymodifier = (2 / yy);
+        decimal lastY = -1;
+
+        decimal xmodifier = (2 / xx);
+        decimal lastX = -1;
+
+        for (int i = 0, y = 0; y <= ySize; y++)
+        {
+            lastY += (decimal)ymodifier;
+            for (int x = 0; x <= xSize; x++, i++)
+            {
+                lastX += (decimal)xmodifier;
+                if (this.dewarpPositions.verts.Length == this.dewarpPositions.generatedVerts.Length)
+                {
+                    this.dewarpPositions.generatedVerts[i] = new Vector3((float)this.dewarpPositions.verts[i].x, (float)this.dewarpPositions.verts[i].y);
+                }
+                else
+                {
+                    this.dewarpPositions.generatedVerts[i] = new Vector3((float)lastX, (float)lastY);
+                }
+                uv[i] = new Vector2((float)x / xSize, (float)y / ySize);
+                tangents[i] = tangent;
+                // yield return wait;
+            }
+            lastX = -1;
+        }
+
+        int[] triangles = new int[xSize * ySize * 6];
+        for (int ti = 0, vi = 0, y = 0; y < ySize; y++, vi++)
+        {
+            for (int x = 0; x < xSize; x++, ti += 6, vi++)
+            {
+                triangles[ti] = vi;
+                triangles[ti + 3] = triangles[ti + 2] = vi + 1;
+                triangles[ti + 4] = triangles[ti + 1] = vi + xSize + 1;
+                triangles[ti + 5] = vi + xSize + 2;
+            }
+        }
+        this.warpMesh.vertices = this.dewarpPositions.generatedVerts;
+        this.warpMesh.triangles = triangles;
+        this.warpMesh.uv = uv;
+        this.warpMesh.tangents = tangents;
+        this.warpMesh.RecalculateNormals();
+        this.warpMesh.RecalculateTangents();
+        Debug.Log(this.dewarpPositions.verts);
+        if (this.dewarpPositions.verts.Length < 16)
+        {
+            // this.dewarpPositions.verts = new Vector3[(xSize + 1) * (ySize + 1)];
+            this.dewarpPositions.verts = this.dewarpPositions.generatedVerts;
+        }
+
+        return this.warpMesh;
+
+
+
     }
 
     /// <summary>

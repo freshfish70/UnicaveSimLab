@@ -218,6 +218,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
                     Debug.Log(new Vector2(float.Parse(parts[0]), float.Parse(parts[1])));
                 }
             }
+            this.dewarpMeshPositions.verts = new Vector3[vecs.Count];
             for (int i = 0; i < vecs.Count; i++)
             {
                 this.dewarpMeshPositions.verts[i] = vecs[i];
@@ -225,7 +226,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         }
 #endif
 
-#if !UNITY_EDITOR
+#if UNITY_EDITOR
         fullPath = $"./{path}/POS-" + Util.ObjectFullName(gameObject) + ".conf";
         Debug.Log("Loading POS file \"" + fullPath + "\"");
         if (File.Exists(fullPath))
@@ -236,7 +237,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
             Debug.Log(parts);
             if (parts.Length > 1)
             {
-                this.transform.position = new Vector3(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')));
+                this.transform.localPosition = new Vector3(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')));
             }
 
         }
@@ -250,7 +251,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
             string[] parts = content.Split('|');
             if (parts.Length > 1)
             {
-                this.transform.rotation = new Quaternion(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')), 0);
+                this.transform.localRotation = Quaternion.Euler(float.Parse(parts[0].Replace(',', '.')), float.Parse(parts[1].Replace(',', '.')), float.Parse(parts[2].Replace(',', '.')));
             }
 
         }
@@ -291,17 +292,22 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         this.transform.localPosition.x + "|" + this.transform.localPosition.y + "|" + this.transform.localPosition.z);
 
 
+        File.WriteAllText($"./{path}/ROTGLOBAL-" + Util.ObjectFullName(this.gameObject) + ".conf",
+            transform.rotation.x + "|" + transform.rotation.y + "|" + transform.rotation.z);
+
         File.WriteAllText($"./{path}/ROT-" + Util.ObjectFullName(this.gameObject) + ".conf",
-            transform.localRotation.x + "|" + transform.localRotation.y + "|" + transform.localRotation.z);
+            transform.localEulerAngles.x + "|" + transform.localEulerAngles.y + "|" + transform.localEulerAngles.z);
     }
 
     public void MoveDisplay(Vector3 pos)
     {
+        Debug.Log(pos);
         this.transform.position += pos;
     }
 
     public void RotateDisplay(Vector3 rot)
     {
+        Debug.Log(rot);
         this.transform.Rotate(rot);
     }
 

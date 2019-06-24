@@ -103,14 +103,91 @@ public class RealtimeCalibrator : NetworkBehaviour
             MeshFilter meshFilter = dewarp.GetDewarpMeshFilter();
             lastWarpedFilter = meshFilter;
             Vector3[] verts = meshFilter.sharedMesh.vertices;
-            verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
+            // verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
+
+
+            Dictionary<int, float> vertsToShift = this.moveVerts(dewarp.xSize, vertexIndex);
+            foreach (var ind in vertsToShift)
+            {
+                verts[ind.Key] = new Vector3(verts[ind.Key].x + (direction.x * delta * ind.Value), verts[ind.Key].y + (direction.y * delta * ind.Value), verts[ind.Key].z);
+            }
+
             meshFilter.sharedMesh.vertices = verts;
             meshFilter.sharedMesh.UploadMeshData(false);
             meshFilter.mesh.RecalculateBounds();
             meshFilter.mesh.RecalculateTangents();
+
         }
 
         calibration.UpdateMeshPositions(lastWarpedFilter?.sharedMesh.vertices);
+
+    }
+
+    public Dictionary<int, float> moveVerts(int size, int index)
+    {
+
+        int sizeX = size;
+
+        int indexSizeX = size + 1;
+
+        // The row the selected index is on
+        int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (sizeX + 1));
+
+        // The size of the select grid
+        int selectGridSize = 3;
+
+        int startRow = (indexRow - selectGridSize) >= 0 ? (indexRow - selectGridSize) : 0;
+        int endRow = (indexRow + selectGridSize) <= sizeX ? (indexRow + selectGridSize) : sizeX;
+
+        // Vertecies to move
+        Dictionary<int, float> vertsToShift = new Dictionary<int, float>();
+
+        float moveFactor = (float)selectGridSize / (float)((selectGridSize * 2));
+        float currentMoveFactor = moveFactor;
+
+        for (int row = startRow; row <= endRow; row++)
+        {
+            int rowDiff = indexRow - row;
+
+            int startIndexForRow = 0;
+            int stopIndexForRow = 0;
+            int midIndexForRow = 0;
+
+            int minSize = row * indexSizeX;
+            int maxSize = minSize + sizeX;
+
+            startIndexForRow = index - (indexSizeX * (rowDiff)) - selectGridSize;
+            startIndexForRow = (startIndexForRow < minSize) ? minSize : startIndexForRow;
+
+            midIndexForRow = index - (indexSizeX * (rowDiff));
+
+            stopIndexForRow = index - (indexSizeX * (rowDiff)) + selectGridSize;
+            stopIndexForRow = (stopIndexForRow > maxSize) ? maxSize : stopIndexForRow;
+
+            int factor = 2;
+            for (int i = midIndexForRow + 1; i <= stopIndexForRow; i++)
+            {
+                vertsToShift.Add(i, moveFactor / factor);
+                factor++;
+            }
+            factor = 2;
+            for (int i = midIndexForRow - 1; i >= startIndexForRow; i--)
+            {
+                vertsToShift.Add(i, moveFactor / factor);
+                factor++;
+            }
+
+            if (midIndexForRow == index)
+            {
+                vertsToShift.Add(midIndexForRow, 1);
+            }
+            else
+            {
+                vertsToShift.Add(midIndexForRow, moveFactor);
+            }
+
+        }
+        return vertsToShift;
 
     }
 
@@ -172,13 +249,24 @@ public class RealtimeCalibrator : NetworkBehaviour
     [ClientRpc]
     void RpcMovePosition(Vector2 direction, float delta, int selectedIndex)
     {
+        Debug.Log(direction);
+
         LocalPositionShift(direction, delta, selectedIndex);
     }
 
     [ClientRpc]
     void RpcRotate(Vector2 direction, float delta, int selectedIndex)
     {
+        Debug.Log(direction);
+
         LocalRotationShift(direction, delta, selectedIndex);
+    }
+
+    [ClientRpc]
+    void RpcSetCalibrationType(CalibrationType calibrationType)
+    {
+        this.calibrationType = calibrationType;
+        this.infoDisplayInstance.SetText(calibrationType.ToString());
     }
 
     /// <summary>
@@ -221,7 +309,7 @@ public class RealtimeCalibrator : NetworkBehaviour
                                 where val > this.calibrationType
                                 orderby val
                                 select val).DefaultIfEmpty().First();
-
+        this.RpcSetCalibrationType(this.calibrationType);
         this.infoDisplayInstance.SetText(this.calibrationType.ToString());
         return this.calibrationType;
     }
@@ -239,7 +327,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            this.vertexIndex = (vertexIndex + 1) % 15;
+            this.vertexIndex = (vertexIndex + 1) % 225;
             if (!noOptions)
             {
                 this.VertexShift(direction, 1f);
@@ -270,7 +358,6 @@ public class RealtimeCalibrator : NetworkBehaviour
         else if (Input.GetKeyDown(KeyCode.Return))
         {
             this.selectedIndex = (selectedIndex + 1) % allOptions.Count;
-            Debug.Log(selectedIndex);
             if (!noOptions)
             {
                 DisplayShift();
@@ -289,13 +376,15 @@ public class RealtimeCalibrator : NetworkBehaviour
         {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftControl))
             {
+                Debug.Log("LEFT SHIFT + UP");
                 direction.z = 1;
+                anyPressed = true;
             }
             else
             {
                 direction.y = 1;
+                anyPressed = true;
             }
-            anyPressed = true;
         }
         else if (Input.GetKey(KeyCode.LeftArrow))
         {
@@ -306,13 +395,15 @@ public class RealtimeCalibrator : NetworkBehaviour
         {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftControl))
             {
+                Debug.Log("LEFT SHIFT + DOWN");
                 direction.z = -1;
+                anyPressed = true;
             }
             else
             {
                 direction.y = -1;
+                anyPressed = true;
             }
-            anyPressed = true;
         }
 
         if (anyPressed)
@@ -320,6 +411,7 @@ public class RealtimeCalibrator : NetworkBehaviour
             Debug.Log("RealtimeCalibration: isServer = " + isServer);
             if (isServer)
             {
+                Debug.Log(direction);
                 switch (this.calibrationType)
                 {
                     case CalibrationType.POSITION:
@@ -329,7 +421,7 @@ public class RealtimeCalibrator : NetworkBehaviour
                         this.RotationShift(direction, 0.15f);
                         break;
                     case CalibrationType.VERTEX:
-                        this.VertexShift(direction, 0.003f);
+                        this.VertexShift(direction, 0.0015f);
                         break;
                 }
 
