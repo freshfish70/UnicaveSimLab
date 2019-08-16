@@ -1,5 +1,126 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &335944611
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 335944612}
+  - component: {fileID: 335944613}
+  m_Layer: 0
+  m_Name: HVL INST01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &335944612
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335944611}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1418483891}
+  m_Father: {fileID: 3582841969812105214}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &335944613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335944611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b05501df480c7c4ebb908efc8fa9df9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  machineName: HVL-INST01
+  displayNumber: 0
+  displays:
+  - {fileID: 1418483892}
+--- !u!1 &1418483890
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1418483891}
+  - component: {fileID: 1418483892}
+  m_Layer: 0
+  m_Name: Monitor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1418483891
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418483890}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 7.91, y: 4.29, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 335944612}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!114 &1418483892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418483890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f13e67f763fb5bc41ad34dfb8dc3d0ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manager: {fileID: 335944613}
+  machineName: 
+  width: 50
+  height: 20
+  head: {fileID: 3582841969102346245}
+  useXRCameras: 0
+  useRenderTextures: 0
+  renderTextureSize: {x: 0, y: 0}
+  is3D: 0
+  exclusiveFullscreen: 0
+  display: 1
+  dualPipe: 0
+  dualInstance: 0
+  windowBounds:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  leftViewport:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  rightViewport:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  loadSettingsAtRuntime: 0
+  serializedLocation: serialization path
 --- !u!1 &2522556333224633403
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,12 +277,6 @@ MonoBehaviour:
     - {x: 0.7190857, y: 0.9895, z: 0}
     - {x: 1, y: 0.9714998, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0
@@ -181,11 +296,10 @@ GameObject:
   - component: {fileID: 3582841968213760634}
   - component: {fileID: 3582841968213760637}
   - component: {fileID: 7239284584567188648}
-  - component: {fileID: 8775387832807190570}
   - component: {fileID: 7218375214393420429}
   - component: {fileID: 6018508074213807061}
   m_Layer: 0
-  m_Name: ProjectorRig 2
+  m_Name: ProjectorRig Calibrated
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -253,13 +367,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   head: {fileID: 3582841969102346245}
-  launchScript: "# Windows Powershell Launch Script\n# Script Generated On Monday,
-    August 12, 2019, 3:45:47 PM\n# Setup contains 12 displays and 3 display managers\n\n#
+  launchScript: "# Windows Powershell Launch Script\n# Script Generated On Friday,
+    August 16, 2019, 10:30:09 AM\n# Setup contains 13 displays and 4 display managers\n\n#
     Display Group: HVL-IG01\nIf ($env:ComputerName -eq 'HVL-IG01') {\n\t& 'UniCave.exe'
     -screen-fullscreen 0 -popupwindow \n}\n\n# Display Group: HVL-IG02\nIf ($env:ComputerName
     -eq 'HVL-IG02') {\n\t& 'UniCave.exe' -screen-fullscreen 0 -popupwindow \n}\n\n#
     Display Group: HVL-IG03\nIf ($env:ComputerName -eq 'HVL-IG03') {\n\t& 'UniCave.exe'
-    -screen-fullscreen 0 -popupwindow \n}"
+    -screen-fullscreen 0 -popupwindow \n}\n\n# Display Group: HVL INST01\nIf ($env:ComputerName
+    -eq 'HVL-INST01') {\n\t& 'UniCave.exe' -screen-fullscreen 0 -popupwindow \n}"
   settingsToLoad: RunConfig.txt
 --- !u!54 &7239284584567188648
 Rigidbody:
@@ -277,19 +392,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &8775387832807190570
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3582841968213760636}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 1.5930086, y: 4.2269044, z: 1}
-  m_Center: {x: 0.17794561, y: -1.5070593, z: -1.42606205e-11}
 --- !u!114 &7218375214393420429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,7 +399,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3582841968213760636}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 571f82e59f4de0941b5e718dbb9fa005, type: 3}
   m_Name: 
@@ -338,7 +440,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3582841968322819167
 Transform:
   m_ObjectHideFlags: 0
@@ -567,12 +669,6 @@ MonoBehaviour:
     - {x: 0.7284859, y: 1.016248, z: 0}
     - {x: 1.007029, y: 0.9937336, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0.06
@@ -598,7 +694,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3582841968525319508
 Transform:
   m_ObjectHideFlags: 0
@@ -729,6 +825,7 @@ GameObject:
   - component: {fileID: 3582841969410626759}
   - component: {fileID: 3582841969410626756}
   - component: {fileID: 2669511882213176818}
+  - component: {fileID: 867922332}
   m_Layer: 0
   m_Name: 1
   m_TagString: Untagged
@@ -874,12 +971,6 @@ MonoBehaviour:
     - {x: 0.7910865, y: 1.0045, z: 0}
     - {x: 1.0472, y: 1, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0
@@ -887,6 +978,48 @@ MonoBehaviour:
   resolution: {x: 2400, y: 3840}
   camChild: {fileID: 0}
   postCams: []
+--- !u!114 &867922332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3582841969410626758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f13e67f763fb5bc41ad34dfb8dc3d0ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manager: {fileID: 0}
+  machineName: 
+  width: 0
+  height: 0
+  head: {fileID: 0}
+  useXRCameras: 0
+  useRenderTextures: 0
+  renderTextureSize: {x: 0, y: 0}
+  is3D: 0
+  exclusiveFullscreen: 0
+  display: 0
+  dualPipe: 0
+  dualInstance: 0
+  windowBounds:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  leftViewport:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  rightViewport:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  loadSettingsAtRuntime: 0
+  serializedLocation: serialization path
 --- !u!1 &3582841969812105185
 GameObject:
   m_ObjectHideFlags: 0
@@ -917,6 +1050,7 @@ Transform:
   - {fileID: 7321827286873518343}
   - {fileID: 6616163515689818264}
   - {fileID: 1241541989399584120}
+  - {fileID: 335944612}
   m_Father: {fileID: 3582841968213760635}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1076,12 +1210,6 @@ MonoBehaviour:
     - {x: 0.7124857, y: 0.9831253, z: 0}
     - {x: 0.9982001, y: 0.9943755, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0.06
@@ -1245,12 +1373,6 @@ MonoBehaviour:
     - {x: 0.7646861, y: 1.007, z: 0}
     - {x: 1.0744, y: 0.9955001, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0
@@ -1414,12 +1536,6 @@ MonoBehaviour:
     - {x: 0.6942846, y: 0.98975, z: 0}
     - {x: 0.9824001, y: 1.00525, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0.06
@@ -1583,12 +1699,6 @@ MonoBehaviour:
     - {x: 0.7526859, y: 0.994, z: 0}
     - {x: 1.0336, y: 0.9819999, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0.06
@@ -1752,12 +1862,6 @@ MonoBehaviour:
     - {x: 0.7502859, y: 0.9639997, z: 0}
     - {x: 1.0192, y: 0.9639997, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0
@@ -1921,12 +2025,6 @@ MonoBehaviour:
     - {x: 0.8884877, y: 1.08725, z: 0}
     - {x: 0.9874002, y: 1, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0
@@ -2025,7 +2123,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1186121803543265567
 Transform:
   m_ObjectHideFlags: 0
@@ -2254,12 +2352,6 @@ MonoBehaviour:
     - {x: 0.4464285, y: 0.9774998, z: 0}
     - {x: 0.6874005, y: 0.9684998, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0.06
@@ -2569,12 +2661,6 @@ MonoBehaviour:
     - {x: 0.7044872, y: 0.9936255, z: 0}
     - {x: 0.9911987, y: 0.9677498, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0.06
   topBlend: 0
   leftBlend: 0.06
@@ -2738,12 +2824,6 @@ MonoBehaviour:
     - {x: 0.766286, y: 0.9520007, z: 0}
     - {x: 1.113801, y: 0.9535006, z: 0}
     generatedVerts: []
-    upperRightPosition: {x: 1, y: 1}
-    upperLeftPosition: {x: -1, y: 1}
-    centerLeftPosition: {x: 0, y: 0}
-    centerRightPosition: {x: 0, y: 0}
-    lowerRightPosition: {x: 1, y: -1}
-    lowerLeftPosition: {x: -1, y: -1}
   rightBlend: 0
   topBlend: 0
   leftBlend: 0
