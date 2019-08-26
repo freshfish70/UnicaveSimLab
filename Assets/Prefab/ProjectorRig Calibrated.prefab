@@ -368,7 +368,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   head: {fileID: 3582841969102346245}
   launchScript: "# Windows Powershell Launch Script\n# Script Generated On Friday,
-    August 16, 2019, 10:30:09 AM\n# Setup contains 13 displays and 4 display managers\n\n#
+    August 16, 2019, 1:34:32 PM\n# Setup contains 13 displays and 4 display managers\n\n#
     Display Group: HVL-IG01\nIf ($env:ComputerName -eq 'HVL-IG01') {\n\t& 'UniCave.exe'
     -screen-fullscreen 0 -popupwindow \n}\n\n# Display Group: HVL-IG02\nIf ($env:ComputerName
     -eq 'HVL-IG02') {\n\t& 'UniCave.exe' -screen-fullscreen 0 -popupwindow \n}\n\n#
@@ -825,7 +825,6 @@ GameObject:
   - component: {fileID: 3582841969410626759}
   - component: {fileID: 3582841969410626756}
   - component: {fileID: 2669511882213176818}
-  - component: {fileID: 867922332}
   m_Layer: 0
   m_Name: 1
   m_TagString: Untagged
@@ -978,48 +977,6 @@ MonoBehaviour:
   resolution: {x: 2400, y: 3840}
   camChild: {fileID: 0}
   postCams: []
---- !u!114 &867922332
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3582841969410626758}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f13e67f763fb5bc41ad34dfb8dc3d0ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  machineName: 
-  width: 0
-  height: 0
-  head: {fileID: 0}
-  useXRCameras: 0
-  useRenderTextures: 0
-  renderTextureSize: {x: 0, y: 0}
-  is3D: 0
-  exclusiveFullscreen: 0
-  display: 0
-  dualPipe: 0
-  dualInstance: 0
-  windowBounds:
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  leftViewport:
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  rightViewport:
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  loadSettingsAtRuntime: 0
-  serializedLocation: serialization path
 --- !u!1 &3582841969812105185
 GameObject:
   m_ObjectHideFlags: 0

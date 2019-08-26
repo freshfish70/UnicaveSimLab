@@ -12,22 +12,19 @@
 //IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 //TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
+[NetworkSettings (channel = 1, sendInterval = 0.016f)]
+public class UCNetwork : NetworkBehaviour {
 
-[NetworkSettings(channel = 1, sendInterval = 0.016f)]
-public class UCNetwork : NetworkBehaviour
-{
-
-    [Tooltip("This object will be transformed by this script")]
+    [Tooltip ("This object will be transformed by this script")]
     public HeadConfiguration head;
 
-    [TextArea(20, 20)]
+    [TextArea (20, 20)]
     public string launchScript;
 
     private float lastTime = 0.0f;
@@ -35,32 +32,28 @@ public class UCNetwork : NetworkBehaviour
     private int frameCount = 0;
     private int numSlaveNodes = 12;
 
-    void Update()
-    {
-        if (isServer)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                RpcQuitApplication();
-                Application.Quit();
+    void Update () {
+        if (isServer) {
+            if (Input.GetKeyDown (KeyCode.Escape)) {
+                RpcQuitApplication ();
+                Application.Quit ();
             }
 
             if (head != null)
-                RpcSetTransforms(transform.position, transform.rotation, head.transform.position, head.transform.rotation);
+                RpcSetTransforms (transform.position, transform.rotation, head.transform.position, head.transform.rotation);
             else
-                RpcSetTransforms(transform.position, transform.rotation, Vector3.zero, Quaternion.identity);
+                RpcSetTransforms (transform.position, transform.rotation, Vector3.zero, Quaternion.identity);
 
-            RpcSetTime(Time.time);
+            RpcSetTime (Time.time);
 
-            if (!syncedRandomSeed && frameCount > 600)
-            {
+            if (!syncedRandomSeed && frameCount > 600) {
                 //don't sync this until all connections have occurred.
                 /*NetworkManager m = gameObject.transform.parent.GetComponent<NetworkManager>();
 				if(m != null)
 				{
 					if (m.connections.Length == numSlaveNodes)
 					{*/
-                RpcSetRandomSeed(UnityEngine.Random.seed);
+                RpcSetRandomSeed (UnityEngine.Random.seed);
                 syncedRandomSeed = true;
                 //}
                 //}
@@ -71,34 +64,26 @@ public class UCNetwork : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcSetTransforms(Vector3 myPos, Quaternion myOri, Vector3 headPos, Quaternion headOri)
-    {
-        transform.SetPositionAndRotation(myPos, myOri);
+    void RpcSetTransforms (Vector3 myPos, Quaternion myOri, Vector3 headPos, Quaternion headOri) {
+        transform.SetPositionAndRotation (myPos, myOri);
         if (head != null)
-            head.transform.SetPositionAndRotation(headPos, headOri);
+            head.transform.SetPositionAndRotation (headPos, headOri);
     }
 
     [ClientRpc]
-    void RpcSetTime(float canonicalTime)
-    {
-        if (lastTime == 0.0f)
-        {
+    void RpcSetTime (float canonicalTime) {
+        if (lastTime == 0.0f) {
             lastTime = canonicalTime;
-        }
-        else
-        {
+        } else {
             float ourTime = Time.time;
             float timeDiff = canonicalTime - lastTime;
             float scale = ((canonicalTime - ourTime) + timeDiff) / timeDiff;
 
             lastTime = canonicalTime;
 
-            if (scale < 0.0f)
-            {
+            if (scale < 0.0f) {
                 scale = 0.01f;
-            }
-            else if (scale > 100.0f)
-            {
+            } else if (scale > 100.0f) {
                 scale = 100.0f;
             }
 
@@ -107,91 +92,75 @@ public class UCNetwork : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcSetRandomSeed(int seed)
-    {
-        Debug.LogError("Synced random seed to " + seed);
-        ParticleSystem[] particleSystems = FindObjectsOfType<ParticleSystem>();
-        foreach (ParticleSystem ps in particleSystems)
-        {
-            ps.Stop();
+    void RpcSetRandomSeed (int seed) {
+        Debug.LogError ("Synced random seed to " + seed);
+        ParticleSystem[] particleSystems = FindObjectsOfType<ParticleSystem> ();
+        foreach (ParticleSystem ps in particleSystems) {
+            ps.Stop ();
         }
 
-        Random.InitState(seed);
+        Random.InitState (seed);
 
-        foreach (ParticleSystem ps in particleSystems)
-        {
+        foreach (ParticleSystem ps in particleSystems) {
             ps.useAutoRandomSeed = false;
-            ps.randomSeed = (uint)seed;
-            ps.Simulate(0.0f, true, true, false);
-            ps.Play();
+            ps.randomSeed = (uint) seed;
+            ps.Simulate (0.0f, true, true, false);
+            ps.Play ();
         }
     }
 
     [ClientRpc]
-    void RpcQuitApplication()
-    {
-        Application.Quit();
+    void RpcQuitApplication () {
+        Application.Quit ();
     }
 
-
-    [Tooltip("You can load PhysicalDisplay settings for all children recursively, right click the name of this script and settings will be loaded from this file path")]
+    [Tooltip ("You can load PhysicalDisplay settings for all children recursively, right click the name of this script and settings will be loaded from this file path")]
     public string settingsToLoad;
-    [ContextMenu("Load Settings For All Children")]
-    void LoadSettingsChildren()
-    {
-        LoadSettingsChildren_h(null);
+    [ContextMenu ("Load Settings For All Children")]
+    void LoadSettingsChildren () {
+        LoadSettingsChildren_h (null);
     }
-    void LoadSettingsChildren_h(GameObject it = null)
-    {
+    void LoadSettingsChildren_h (GameObject it = null) {
         if (it == null) it = gameObject;
 
-        for (int i = 0; i < it.transform.childCount; i++)
-        {
-            GameObject child = it.transform.GetChild(i).gameObject;
-            if (child.GetComponent<PhysicalDisplay>() != null)
-            {
-                child.GetComponent<PhysicalDisplay>().TryToDeSerialize(settingsToLoad);
+        for (int i = 0; i < it.transform.childCount; i++) {
+            GameObject child = it.transform.GetChild (i).gameObject;
+            if (child.GetComponent<PhysicalDisplay> () != null) {
+                child.GetComponent<PhysicalDisplay> ().TryToDeSerialize (settingsToLoad);
             }
-            LoadSettingsChildren_h(child);
+            LoadSettingsChildren_h (child);
         }
     }
 
-    public List<PhysicalDisplay> GetAllDisplays()
-    {
-        List<PhysicalDisplay> disps = new List<PhysicalDisplay>();
-        List<PhysicalDisplayManager> managers = new List<PhysicalDisplayManager>();
-        IterateAllRelevantChildren(gameObject, disps, managers);
+    public List<PhysicalDisplay> GetAllDisplays () {
+        List<PhysicalDisplay> disps = new List<PhysicalDisplay> ();
+        List<PhysicalDisplayManager> managers = new List<PhysicalDisplayManager> ();
+        IterateAllRelevantChildren (gameObject, disps, managers);
         return disps;
     }
 
-    string GenerateLaunchScript()
-    {
-        List<PhysicalDisplay> displays = new List<PhysicalDisplay>();
-        List<PhysicalDisplayManager> managers = new List<PhysicalDisplayManager>();
-        IterateAllRelevantChildren(gameObject, displays, managers);
+    string GenerateLaunchScript () {
+        List<PhysicalDisplay> displays = new List<PhysicalDisplay> ();
+        List<PhysicalDisplayManager> managers = new List<PhysicalDisplayManager> ();
+        IterateAllRelevantChildren (gameObject, displays, managers);
 
         string res = "# Windows Powershell Launch Script\n";
-        res += "# Script Generated On " + System.DateTime.Now.ToLongDateString() + ", " + System.DateTime.Now.ToLongTimeString() + "\n";
+        res += "# Script Generated On " + System.DateTime.Now.ToLongDateString () + ", " + System.DateTime.Now.ToLongTimeString () + "\n";
         res += "# Setup contains " + displays.Count + " displays and " + managers.Count + " display managers";
 
-        for (int i = 0; i < displays.Count; ++i)
-        {
+        for (int i = 0; i < displays.Count; ++i) {
             if (displays[i].manager != null) continue;
 
             res += "\n\n# Display: " + displays[i].name;
             res += "\nIf ($env:ComputerName -eq '" + displays[i].machineName + "') {";
-            if (displays[i].dualPipe && displays[i].dualInstance)
-            {
-                for (int j = 0; j < 2; j++)
-                {
+            if (displays[i].dualPipe && displays[i].dualInstance) {
+                for (int j = 0; j < 2; j++) {
                     res += "\n\t& '" + Application.productName + ".exe'";
                     res += " " + (displays[i].exclusiveFullscreen ? "-screen-fullscreen 1 -adapter " + displays[i].display : "-screen-fullscreen 0 -popupwindow");
                     res += " " + ((displays[i].is3D && !displays[i].dualPipe) ? "-vrmode stereo" : "");
                     res += " " + "eye " + (j == 0 ? "left" : "right");
                 }
-            }
-            else
-            {
+            } else {
                 res += "\n\t& '" + Application.productName + ".exe'";
                 res += " " + (displays[i].exclusiveFullscreen ? "-screen-fullscreen 1 -adapter " + displays[i].display : "-screen-fullscreen 0 -popupwindow");
                 res += " " + ((displays[i].is3D && !displays[i].dualPipe) ? "-vrmode stereo" : "");
@@ -200,8 +169,7 @@ public class UCNetwork : NetworkBehaviour
             res += "\n}";
         }
 
-        for (int i = 0; i < managers.Count; i++)
-        {
+        for (int i = 0; i < managers.Count; i++) {
             res += "\n\n# Display Group: " + managers[i].name;
             res += "\nIf ($env:ComputerName -eq '" + managers[i].machineName + "') {";
 
@@ -214,25 +182,19 @@ public class UCNetwork : NetworkBehaviour
 
         return res;
     }
-    private void IterateAllRelevantChildren(GameObject it, List<PhysicalDisplay> displays, List<PhysicalDisplayManager> managers)
-    {
-        for (int i = 0; i < it.transform.childCount; i++)
-        {
-            GameObject child = it.transform.GetChild(i).gameObject;
-            if (child.GetComponent<PhysicalDisplay>() != null)
-            {
-                displays.Add(child.GetComponent<PhysicalDisplay>());
+    private void IterateAllRelevantChildren (GameObject it, List<PhysicalDisplay> displays, List<PhysicalDisplayManager> managers) {
+        for (int i = 0; i < it.transform.childCount; i++) {
+            GameObject child = it.transform.GetChild (i).gameObject;
+            if (child.GetComponent<PhysicalDisplay> () != null) {
+                displays.Add (child.GetComponent<PhysicalDisplay> ());
+            } else if (child.GetComponent<PhysicalDisplayManager> ()) {
+                managers.Add (child.GetComponent<PhysicalDisplayManager> ());
             }
-            else if (child.GetComponent<PhysicalDisplayManager>())
-            {
-                managers.Add(child.GetComponent<PhysicalDisplayManager>());
-            }
-            IterateAllRelevantChildren(child, displays, managers);
+            IterateAllRelevantChildren (child, displays, managers);
         }
     }
 
-    void OnValidate()
-    {
-        launchScript = GenerateLaunchScript();
+    void OnValidate () {
+        launchScript = GenerateLaunchScript ();
     }
 }
