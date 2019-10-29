@@ -12,17 +12,16 @@
 //IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 //TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Xml.Linq;
-using System.Collections.Generic;
-using System.Collections;
 using UnityEngine;
-using System.IO;
 #if UNITY_EDITOR
-using UnityEditor.SceneManagement;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 #endif
 
 [RequireComponent(typeof(PhysicalDisplay))]
@@ -39,14 +38,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         RIGHT,
         CENTER
     }
-
-    /// <summary>
-    /// Flag to enable/disable if we want to load the config file
-    /// when the object starts.
-    /// </summary>
-    [Tooltip("Load config file on start")]
-    [SerializeField]
-    private bool loadConfigOnStart = true;
 
     /// <summary>
     /// Visual marker instance, displayes the cornber we are curently
@@ -70,7 +61,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     {
         get
         {
-            return GetComponent<PhysicalDisplay>().windowBounds.width / (float)GetComponent<PhysicalDisplay>().windowBounds.height;
+            return GetComponent<PhysicalDisplay>().windowBounds.width / (float) GetComponent<PhysicalDisplay>().windowBounds.height;
         }
     }
 
@@ -149,21 +140,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     public void SetVisualMarkerVertextPoint(int vertexIndex)
     {
         this.SetVisualMarker(this.dewarpMeshPositions.verts[vertexIndex]);
-        // switch (vertexIndex)
-        // {
-        //     case (int)VertexSelectedEnum.TOP_RIGHT:
-        //         this.SetVisualMarker(this.dewarpMeshPositions.upperRightPosition);
-        //         break;
-        //     case (int)VertexSelectedEnum.TOP_LEFT:
-        //         this.SetVisualMarker(this.dewarpMeshPositions.upperLeftPosition);
-        //         break;
-        //     case (int)VertexSelectedEnum.BOTTOM_LEFT:
-        //         this.SetVisualMarker(this.dewarpMeshPositions.lowerLeftPosition);
-        //         break;
-        //     case (int)VertexSelectedEnum.BOTTOM_RIGHT:
-        //         this.SetVisualMarker(this.dewarpMeshPositions.lowerRightPosition);
-        //         break;
-        // }
     }
 
     /// <summary>
@@ -289,8 +265,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         File.WriteAllText($"./{path}/WARP-" + Util.ObjectFullName(this.gameObject) + ".conf", strBuilder.ToString());
 
         File.WriteAllText($"./{path}/POS-" + Util.ObjectFullName(this.gameObject) + ".conf",
-        this.transform.localPosition.x + "|" + this.transform.localPosition.y + "|" + this.transform.localPosition.z);
-
+            this.transform.localPosition.x + "|" + this.transform.localPosition.y + "|" + this.transform.localPosition.z);
 
         File.WriteAllText($"./{path}/ROTGLOBAL-" + Util.ObjectFullName(this.gameObject) + ".conf",
             transform.rotation.x + "|" + transform.rotation.y + "|" + transform.rotation.z);
@@ -310,7 +285,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         Debug.Log(rot);
         this.transform.Rotate(rot);
     }
-
 
     /// <summary>
     /// Returns a dictionary of <c>Dewarp</c> object(s)
@@ -494,10 +468,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
                 this.dewarpMeshPositions.verts[i] = new Vector3(localVertex.x / this.displayRatio, localVertex.y, localVertex.z);
                 i++;
             }
-            // this.dewarpMeshPositions.upperRightPosition = new Vector3(vertex[0].x / this.displayRatio, vertex[0].y);
-            // this.dewarpMeshPositions.upperLeftPosition = new Vector3(vertex[1].x / this.displayRatio, vertex[1].y);
-            // this.dewarpMeshPositions.lowerLeftPosition = new Vector3(vertex[2].x / this.displayRatio, vertex[2].y);
-            // this.dewarpMeshPositions.lowerRightPosition = new Vector3(vertex[3].x / this.displayRatio, vertex[3].y);
             this.SaveWarpFile();
         }
 
@@ -505,7 +475,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 
     /// <summary>
     /// Removes post processing layer from head/eye camera, so we dont
-    /// get the post processing meshes in the head/eye camera when we render to
+    /// see the post processing/dewarp meshes in the head/eye camera when we render to
     /// the post processing mesh. And set StereoTargetEyeMask to none. 
     /// </summary>
     /// <param name="camera">the head camera</param>
@@ -524,11 +494,11 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     /// <returns>Mulitplier factor for vertex position</returns>
     private Vector2 GetMultiplierFactor()
     {
-        return new Vector2(displayRatio, 1.0f);
+        return new Vector2(this.displayRatio, 1.0f);
     }
 
     /// <summary>
-    /// Draws a line (blue/red) representing the blending
+    /// /// Draws a line (blue/red) representing the blending
     /// of the calibration. 
     /// </summary>
     void OnDrawGizmosSelected()
@@ -584,12 +554,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     /// </summary>
     void Awake()
     {
-#if !UNITY_EDITOR
-		if (this.loadConfigOnStart)
-		{
-			this.LoadWarpFile();
-		}
-#endif
 
     }
 
