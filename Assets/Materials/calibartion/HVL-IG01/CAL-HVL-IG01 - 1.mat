@@ -62,7 +62,7 @@ Material:
     - _DebugMag: 0.06
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FadeSizeNX: 0.05
+    - _FadeSizeNX: 0.08
     - _FadeSizeNY: 0
     - _FadeSizePX: 0.05
     - _FadeSizePY: 0
