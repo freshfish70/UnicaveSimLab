@@ -20,6 +20,6 @@ public class RotateAround : MonoBehaviour
 
     void Update()
     {
-        this.transform.RotateAround(obj.transform.position, Vector3.up, this.speed * Time.deltaTime);
+        this.transform.RotateAround(this.rotateAroundTarget.transform.position, Vector3.up, this.speed * Time.deltaTime);
     }
 }
