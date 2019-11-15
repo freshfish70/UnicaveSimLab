@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8270980161769229047}
   - component: {fileID: 3612706251938588736}
   - component: {fileID: 5313445511823655992}
-  - component: {fileID: 3200545706368471417}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -128,22 +127,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkManager: {fileID: 3612706251938588736}
-  headMachine: HVL-IG02
-  serverAddress: 158.38.65.37
+  headMachine: WIN-B7CHVGFU0S0
+  serverAddress: 158.38.101.250
   serverPort: 7568
---- !u!114 &3200545706368471417
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2505353288518371051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 227461547, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  showGUI: 1
-  offsetX: 0
-  offsetY: 0
